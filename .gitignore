@@ -1,0 +1,19 @@
+
+
+# Método Ceiba - Auto-managed agent files
+.github/agents/metodo-ceiba-*.agent.md
+.claude/commands/metodo-ceiba-*.md
+# Método Ceiba - Auto-managed kanban prompts
+.github/prompts/ceiba-*.prompt.md
+.claude/commands/ceiba-*.md
+# Método Ceiba - Auto-injected agent skills
+.github/skills/
+.claude/skills/
+# Método Ceiba - Metodología exportada (Claude Code)
+.ceiba-metodo/
+# Método Ceiba - Worktrees y script auxiliar
+ceiba-worktree.js
+/worktrees/
+.github
+.claude
+
