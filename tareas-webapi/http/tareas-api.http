@@ -1,0 +1,175 @@
+# ============================================================================
+# Pruebas REST — API de Tareas (HU #1) · vscode-restclient
+# ============================================================================
+# Extension: "REST Client" (humao.rest-client) — F1 > "ext install rest-client"
+#
+# PRECONDICIONES (en este orden):
+#   1. Postgres (WSL Ubuntu, NO Rancher Desktop):
+#        wsl -d Ubuntu -- bash -lc "cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d"
+#   2. API:
+#        npm run start:dev     (o: npm run build && npm run start:prod)
+#   3. Token JWT (dev, 7 días) — si expira, regenerar y pegar en @token:
+#        node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.env.JWT_SECRET || 'tareas-dev-secret-2026', {expiresIn:'7d'}))"
+#
+# CÓMO USAR:
+#   - Click en "Send Request" (CodeLens) sobre cada bloque, o Ctrl+Alt+R.
+#   - Los comentarios "# ..." entre bloques indican el resultado ESPERADO.
+#   - El flujo encadenado (07, 09, 11, 12, 13, 14) usa el id del request
+#     "# @name crearTarea" (03): ejecuta 03 primero y luego el resto.
+#   - Para reiniciar el flujo completo: borrar la base (docker compose down -v)
+#     o usar el id 999999 de los casos 404.
+# ============================================================================
+
+@baseUrl = http://localhost:3000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzkwNzkyMzUwLCJleHAiOjE3OTEzOTcxNTB9.xoOb5mlA2ogUIRcoNe1ZWgP6EFPb-efgWzsDn3lIIcU
+
+###
+
+# ============================================================================
+# 01 · AUTH · GET sin token -> ESPERADO: 401 {"message":"Token JWT ausente"}
+# ============================================================================
+GET {{baseUrl}}/tareas
+
+###
+
+# ============================================================================
+# 02 · AUTH · GET con token inválido -> ESPERADO: 401 {"message":"Token JWT inválido"}
+# ============================================================================
+GET {{baseUrl}}/tareas
+Authorization: Bearer invalido
+
+###
+
+# ============================================================================
+# 03 · CREATE · POST con título y descripción -> ESPERADO: 201
+#      Body: { id: int, titulo, descripcion, estado: "pendiente", creadaEn: ISO }
+#      (Request "ancla": sus id alimenta a 07, 09, 11, 12, 13, 14)
+# ============================================================================
+# @name crearTarea
+POST {{baseUrl}}/tareas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "titulo": "Tarea de prueba .http",
+  "descripcion": "Creada por el archivo de pruebas REST Client"
+}
+
+###
+
+# ============================================================================
+# 04 · CREATE · POST sin título -> ESPERADO: 400 (validación, no toca handlers)
+# ============================================================================
+POST {{baseUrl}}/tareas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "descripcion": "Falta el título obligatorio"
+}
+
+###
+
+# ============================================================================
+# 05 · CREATE · POST solo título (descripcion opcional) -> ESPERADO: 201
+#      Body: { id, titulo, descripcion: null, estado: "pendiente", creadaEn }
+# ============================================================================
+POST {{baseUrl}}/tareas
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "titulo": "Tarea sin descripción"
+}
+
+###
+
+# ============================================================================
+# 06 · LIST · GET colección -> ESPERADO: 200, array con la tarea del request 03
+# ============================================================================
+GET {{baseUrl}}/tareas
+Authorization: Bearer {{token}}
+
+###
+
+# ============================================================================
+# 07 · READ · GET por id (id del request 03) -> ESPERADO: 200 con la tarea
+#      (Ejecutar 03 antes; si no, el texto literal se envía y fallará)
+# ============================================================================
+GET {{baseUrl}}/tareas/{{crearTarea.response.body.$.id}}
+Authorization: Bearer {{token}}
+
+###
+
+# ============================================================================
+# 08 · READ · GET por id inexistente -> ESPERADO: 404 "Tarea 999999 no encontrada"
+# ============================================================================
+GET {{baseUrl}}/tareas/999999
+Authorization: Bearer {{token}}
+
+###
+
+# ============================================================================
+# 09 · UPDATE · PUT cambios completos (título + descripción + estado)
+#      -> ESPERADO: 200 con la tarea actualizada (estado "completada")
+# ============================================================================
+PUT {{baseUrl}}/tareas/{{crearTarea.response.body.$.id}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "titulo": "Tarea de prueba .http (actualizada)",
+  "descripcion": "Actualizada por el archivo de pruebas",
+  "estado": "completada"
+}
+
+###
+
+# ============================================================================
+# 10 · UPDATE · PUT con estado inválido -> ESPERADO: 400
+#      (estado debe ser "pendiente" | "completada")
+# ============================================================================
+PUT {{baseUrl}}/tareas/{{crearTarea.response.body.$.id}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "estado": "en_progreso"
+}
+
+###
+
+# ============================================================================
+# 11 · UPDATE · PUT a id inexistente -> ESPERADO: 404
+# ============================================================================
+PUT {{baseUrl}}/tareas/999999
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "titulo": "Fantasma"
+}
+
+###
+
+# ============================================================================
+# 12 · DELETE · PUT... DELETE de la tarea creada -> ESPERADO: 204 (sin body)
+# ============================================================================
+DELETE {{baseUrl}}/tareas/{{crearTarea.response.body.$.id}}
+Authorization: Bearer {{token}}
+
+###
+
+# ============================================================================
+# 13 · DELETE · DELETE repetida (ya eliminada) -> ESPERADO: 404
+# ============================================================================
+DELETE {{baseUrl}}/tareas/{{crearTarea.response.body.$.id}}
+Authorization: Bearer {{token}}
+
+###
+
+# ============================================================================
+# 14 · VERIFICACIÓN · GET de la tarea eliminada -> ESPERADO: 404 (confirma DELETE)
+# ============================================================================
+GET {{baseUrl}}/tareas/{{crearTarea.response.body.$.id}}
+Authorization: Bearer {{token}}

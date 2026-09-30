@@ -2,7 +2,7 @@
 story_number: 1
 title: "API de gestión de tareas — CRUD completo"
 slug: "gestion-tareas-api"
-estado: "Borrador (PO)"
+estado: "Lista para Revisión"
 autor: "Gerson Sanchez"
 fecha_creacion: "2026-09-29"
 es_resultado_slicing: false
@@ -42,11 +42,11 @@ medicion_attempt_status:
 medicion_attempt_at:
 medicion_attempt_reason:
 normalization_contract_hash:
-dev_ia_session_minutes:
-dev_manual_minutes:
-dev_total_minutes:
-dev_responsable:
-dev_closed_at:
+dev_ia_session_minutes: 1061
+dev_manual_minutes: 0
+dev_total_minutes: 1061
+dev_responsable: gerson.sanchez
+dev_closed_at: "2026-09-30 12:55"
 ---
 
 # Historia #1: API de gestión de tareas — CRUD completo
@@ -60,9 +60,9 @@ dev_closed_at:
 | Medición PNF | ⏳ Pendiente | | Developer |
 | Verificación cruzada | ⏳ Pendiente | | Developer |
 | Análisis Arquitectónico | ⏳ Pendiente | | Arquitecto |
-| Refinamiento Técnico | ⏳ Pendiente | | Developer |
+| Refinamiento Técnico | ✅ Completada | 2026-09-29 | Gerson Sanchez (dev-rapido) |
 | Estimación | ⏳ Pendiente | | Developer |
-| Desarrollo | ⏳ Pendiente | | Developer |
+| Desarrollo | ✅ Completada (Dev-Rápido) | 2026-09-30 | gerson.sanchez |
 
 ## Archivos de esta Historia
 
@@ -83,6 +83,7 @@ dev_closed_at:
 | Fase        | Inicio                    | Fin |
 | ----------- | ------------------------- | --- |
 | Creación HU | 2026-09-29 11:29 | 2026-09-29 11:35 |
+| Desarrollo  | 2026-09-29 14:02 | 2026-09-30 12:55 |
 
 ---
 

@@ -1,0 +1,18 @@
+# dependencies
+/node_modules
+
+# build
+/dist
+*.tsbuildinfo
+
+# coverage
+/coverage
+
+# environment — credenciales nunca en el repo (GPS §Seguridad)
+.env
+
+# logs
+*.log
+
+# OS
+.DS_Store

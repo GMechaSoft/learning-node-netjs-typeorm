@@ -1,0 +1,12 @@
+{
+  "attempt_id": "20260929215353-aad33880-31df-4079-b18c-8445853cc666",
+  "story_id": "1",
+  "status": "PENDING_STRATEGY",
+  "started_at": "2026-09-29T21:53:53.292Z",
+  "updated_at": "2026-09-29T21:53:53.425Z",
+  "rieles": 1,
+  "work_dir": "d:\\workspace\\learning\\learning-node-netjs-typeorm\\docs\\stories\\1-gestion-tareas-api\\.medicion\\attempts\\20260929215353-aad33880-31df-4079-b18c-8445853cc666\\work",
+  "official_artifacts_modified": false,
+  "reason_code": "STRATEGY_NOT_APPROVED",
+  "detail": "No existe measurement-strategy.json"
+}
