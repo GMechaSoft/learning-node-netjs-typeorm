@@ -1,0 +1,22 @@
+[
+  {
+    "decision_key": "continuidad:2-gestion-tareas-web-ui",
+    "tipo": "continuidad",
+    "estado": "resuelta",
+    "conclusion": "Extiende la HU #1 (API CRUD de tareas ya desarrollada y verificada); es la primera interfaz de usuario del proyecto — no existe UI previa, manual ni parcial que extienda o reemplace.",
+    "evidencia": "HU #1 en estado 'Lista para Revisión' con desarrollo completado (docs/stories/1-gestion-tareas-api); docs/architecture/index.md declara 'El sistema NO incluye interfaz de usuario'. Confirmado por el usuario en la sesión 2026-10-01.",
+    "origen": "po_confirmado",
+    "confirmed_at": "2026-10-01",
+    "responsable": "Gerson Sanchez"
+  },
+  {
+    "decision_key": "frontier:tareas-webapi",
+    "tipo": "frontera",
+    "estado": "resuelta",
+    "conclusion": "El backend tareas-webapi (NestJS + PostgreSQL) es parte del mismo proyecto y ya existe (HU #1); el frontend solo lo consume vía HTTP/JSON con Bearer JWT, sin modificar su código.",
+    "evidencia": "docs/architecture/index.md: único contenedor RestApi del ecosistema; HU #1 desarrolla la API CRUD completa. Confirmado por el usuario en la sesión 2026-10-01.",
+    "origen": "po_confirmado",
+    "confirmed_at": "2026-10-01",
+    "responsable": "Gerson Sanchez"
+  }
+]

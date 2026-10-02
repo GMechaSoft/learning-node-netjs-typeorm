@@ -1,60 +1,45 @@
-# 🚀 Development Handoff: HU #1 Gestión de Tareas API (Dev-Rápido) + Pruebas REST Client + Guía WSL
+# 🚀 Development Handoff: HU #2 UI Web de Gestión de Tareas — Dev-Rápido (plan/refinamiento guardado) + commit "planificación UI"
 
-**Date:** 2026-09-30 14:00  
+**Date:** 2026-10-01 19:54  
 **Repository Branch:** master
 
 ---
 
 ## 🎯 1. Objective
-- Entregar la HU #1 (CRUD REST de tareas) del proyecto `tareas-webapi` (NestJS v12 + TypeORM + PostgreSQL) ejecutando el flujo **Dev-Rápido** del Método Ceiba (hu → plan → implement → close), y en sesiones posteriores: pruebas manuales `.http` para la extensión REST Client, guía WSL en la memoria del proyecto (`memories/`) e ignorar el artefacto `tsconfig.build.tsbuildinfo` en git.
+- Ejecutar el workflow **dev-rapido** del Método Ceiba sobre la HU #2 (frontend React TS/JSX de la app de tareas en `/tareas-webui`, src en `/tareas-webui/src`), consumiendo la API REST ya entregada (HU #1). Entregable final: la UI CRUD completa + tests. Esta sesión completó el tramo de planificación (step-00 hu + step-01 plan) y guardó el `refinamiento.md`; la implementación quedó pendiente de aprobar el plan.
 
 ## 📊 2. Current Status
-- **Status:** Ready for Testing
-- API CRUD completa y verificada: 35/35 tests unitarios/integración (Jest), smoke 14/14 contra PostgreSQL real, flujo `.http` 14/14 validado contra la API viva. Lint (oxlint) 0 errores, build OK. **Todo el trabajo está staged en git pero SIN commit** (working tree limpio vs índice). HEAD local `8ad1364 planificación` va 1 commit por delante de `origin/master` (`8e43076 guia`).
+- **Status:** In Progress
+- Dev-rápido a mitad de camino: **step-00 (hu)** y **step-01 (plan)** completados — se leyó la feature análoga (backend `tareas-webapi`), se hizo el inventario de reutilización, se diseñó el plan y se guardó `docs/stories/2-gestion-tareas-web-ui/refinamiento.md` (17 tareas, 6 fases) con la fase "Refinamiento Técnico" marcada ✅ en `index.md`. **El plan quedó pendiente de aprobación del usuario** (el workflow exige aprobación ANTES de implementar, §6). **NO se escribió ninguna línea de código frontend** — `tareas-webui/` no existe. Todo está commitado en `e1fc51a planificación UI` (HEAD local, 1 commit por delante de `origin/master` `cacbbdc`); working tree limpio.
 
 ## 🗂️ 3. Files in Progress
-**Infraestructura API (todo nuevo, staged):**
-- `tareas-webapi/docker-compose.yml`, `tareas-webapi/.env.example`, `tareas-webapi/package.json`, `tareas-webapi/.gitignore`, `tareas-webapi/.oxlintrc.json`, `tareas-webapi/.prettierrc`, `tareas-webapi/jest.config.ts`, `tareas-webapi/nest-cli.json`, `tareas-webapi/tsconfig.json`, `tareas-webapi/tsconfig.build.json`, `tareas-webapi/package-lock.json`
-- `tareas-webapi/src/main.ts`, `tareas-webapi/src/app.module.ts`
-- `tareas-webapi/src/modules/tareas/domain/` — `tarea.ts`, `estado-tarea.ts`, `tarea-repository.port.ts` (token DI `TAREA_REPOSITORY`), `tarea.spec.ts`
-- `tareas-webapi/src/modules/tareas/application/commands/` — `crear-tarea.handler.ts`, `actualizar-tarea.handler.ts`, `eliminar-tarea.handler.ts`, `handlers-comando.spec.ts`
-- `tareas-webapi/src/modules/tareas/application/queries/` — `listar-tareas.handler.ts`, `obtener-tarea.handler.ts`, `handlers-query.spec.ts`
-- `tareas-webapi/src/modules/tareas/infrastructure/` — `tarea.entity.ts`, `tarea-repository.impl.ts`, `tareas-persistence.module.ts`
-- `tareas-webapi/src/modules/tareas/api/` — `tareas.controller.ts`, `tareas.controller.spec.ts`, `dto/crear-tarea.dto.ts`, `dto/actualizar-tarea.dto.ts`
-- `tareas-webapi/src/modules/tareas/tareas.module.ts`
-- `tareas-webapi/src/shared/guards/` — `jwt-auth.guard.ts`, `jwt-auth.guard.spec.ts`
-- `tareas-webapi/smoke-hu1.js`
+**HU #2 (nueva, commitada en e1fc51a):**
+- `docs/stories/2-gestion-tareas-web-ui/refinamiento.md` — plan dev-rapido (nuevo esta sesión): plan arquitectónico + inventario de reutilización + 17 tareas T1-T17 en 6 fases (scaffold Vite+React+TS, tipos/cliente HTTP, hooks useTareas/useToken, componentes TokenAuth/TareaForm/TareaList/TareaItem/Mensajes/App, tests Vitest+Testing Library, verificación)
+- `docs/stories/2-gestion-tareas-web-ui/index.md` — fase "Refinamiento Técnico" = ✅ Completada 2026-10-01; métrica "Desarrollo" con inicio 19:48 (sin fin)
+- (resto del paquete de historia de la sesión anterior, ya commitado aquí: `historia.md`, `qa.md`, `2.preview.md`, `especificacion.md`, `cambios.md`)
 
-**Pruebas y documentación (nuevos esta sesión):**
-- `tareas-webapi/http/tareas-api.http` — 14 casos REST Client (14/14 validados)
-- `memories/guia-wsl-docker.md` — guía WSL/Docker (memoria del proyecto en el repo)
-- `docs/stories/1-gestion-tareas-api/` — `index.md` (M), `cambios.md` (M), `refinamiento.md` (16/16 `[x]`), `dev-record.md` (nuevo), `.medicion/attempts/*` (4 intentos HALT)
-- `tareas-webapi/.gitignore` — regla `*.tsbuildinfo` agregada (el fichero fue des-tracked con `git rm -f --cached`)
+**Otros (commitados en e1fc51a):**
+- `docs/cosmic/measurement-decisions.json` — registro de decisiones del método (continuidad + frontera, ambas `po_confirmado`)
+- `docs/stories/1-gestion-tareas-api/.medicion/.gitignore` (modificado) + 3 `attempt.json` eliminados (limpieza de los intentos de medición HALT de la HU #1)
+- `guia.md -> guia-webapi.md` (rename) y `tareas-webapi/guia-react-web.md` (referencia del stack frontend)
+
+**Pendiente crear (no existe aún):**
+- `tareas-webui/` — proyecto Vite + React + TypeScript (scaffold T1, primera tarea del plan)
 
 ## 🛠️ 4. Changes Made
-- **API CRUD `/api/tareas`** (POST 201 / GET 200 / GET :id / PUT :id / DELETE :id 204) con arquitectura hexagonal + CQRS + DDD táctico; guard JWT Bearer (`JwtAuthGuard`, `CanActivate` propio con `JwtService`), `ValidationPipe` global (whitelist+transform), prefix global `api`, Swagger en `/docs` con `addBearerAuth`.
-- **DI por token:** la interfaz `TareaRepository` se borra en runtime → inyección con `@Inject(TAREA_REPOSITORY)` (unique symbol en el port) y `{ provide: TAREA_REPOSITORY, useValue: TareaRepositoryImpl }` en el módulo de persistencia.
-- **Postgres vía WSL Ubuntu** (preferencia explícita del usuario, NO Rancher Desktop): `wsl -d Ubuntu -- bash -lc "cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d"`.
-- **Pruebas REST Client** `http/tareas-api.http`: variables de archivo `@baseUrl`/`@token` (token dev 7 días; comando de regeneración en el header), 2 casos 401, CRUD 201/200/204, validación 400, 404s, flujo encadenado real vía `# @name crearTarea` + `{{crearTarea.response.body.$.id}}` (ejecutar el caso 03 primero); cada bloque documenta su resultado esperado.
-- **Memoria del proyecto:** `memories/guia-wsl-docker.md` (estado del sistema WSL, mapa de rutas Windows↔WSL, trampa de comillas PowerShell, espera de healthy, checklist de puesta en marcha). Preferencia registrada: "memoria del proyecto" = carpeta `memories/` del repo, NO la memoria interna del agente.
-- **Git:** `*.tsbuildinfo` en `tareas-webapi/.gitignore` + `git rm -f --cached tsconfig.build.tsbuildinfo` (verificado con `git check-ignore`).
+- **step-00-hu:** requerimiento = HU #2; HU existente encontrada en `docs/stories/2-gestion-tareas-web-ui/`; guard `verificar-tracker` no-op (tracker ya `ninguna`).
+- **step-01-plan (discovery):** leyó la feature análoga ya implementada (backend `tareas-webapi`: controller, entity, DTOs, main.ts) para extraer el contrato HTTP (códigos 201/200/204/400/401/404/5xx, forma de `Tarea`, campos de los DTOs) y las convenciones (`singleQuote`, kebab-case, async/await). §2c de medición se **omitió** (no existe `docs/cosmic/measurement-strategy.json` APPROVED) → la medición CFP correrá al cierre (step-03b).
+- **Plan + refinamiento.md:** arquitectura = SPA de una vista (Vite + React + TS, cliente fino → custom hook → componentes). 17 tareas en 6 fases; los tests (T13-T16) mapean a QA-01..QA-16. Inventario de reutilización: consume el backend (frontier), redefine en cliente los tipos leyendo el backend, reutiliza convenciones de `coding-standards.md`, crea el proyecto `tareas-webui` y su stack de tests (Vitest + Testing Library).
+- **Git:** el usuario commitó todo en `e1fc51a planificación UI` (incluye el `refinamiento.md` generado esta sesión).
 
 ## ⚠️ 5. Attempts and Failures
-- **Docker vía Rancher Desktop (Start-Process + espera de daemon)**
-  - *Result:* Cancelado por el usuario (prefiere WSL). El daemon del WSL Ubuntu (Docker 29.6.1) ya estaba activo como servicio; todo pasó a WSL. Nota: en una sesión previa "Docker v29.5.3 disponible" se refería al cliente de Rancher, no al daemon.
-- **Bash embebido con comillas dobles en PowerShell** (`wsl -d Ubuntu -- bash -lc "for i in $(seq 1 30)... 2>/dev/null"`)
-  - *Result:* Falló: PowerShell expandió `$(seq 1 30)` antes de pasar a WSL (error `seq: El término "seq" no se reconoce...`), redirigió stderr a `D:\dev\null` y rompió los Go-templates `{{...}}`. Causa: PS expande `$(...)`, `${}` y `2>` en strings dobles. Corrección: **comillas simples** para el comando bash (documentado en `memories/guia-wsl-docker.md`).
-- **Espera de healthcheck con `docker inspect --format "{{.State.Health.Status}}"`**
-  - *Result:* Devolvió string vacío en ~30s de reintentos aunque el contenedor ya era healthy (el estado aparece con ~5-10s de retraso tras el arranque). Verificación efectiva: `docker ps --filter "name=tareas-postgres"` → `Up ... (healthy)`.
-- **`git rm --cached tsconfig.build.tsbuildinfo` sin `-f`**
-  - *Result:* `error: the following file has staged content different from both the file and the HEAD`. El fichero estaba staged (`AM`). Corrección: `git rm -f --cached` (nunca había sido commitado); verificado con `git check-ignore -v` → `tareas-webapi/.gitignore:6:*.tsbuildinfo`.
-- **CLI de medición con ruta relativa desde `tareas-webapi/`**
-  - *Result:* `MODULE_NOT_FOUND`. Corrección: siempre `Set-Location` a la raíz del workspace antes de invocar `node ".ceiba-metodo\metodo-ceiba\medicion\preparar-medicion-cli.mjs"`.
-- **Medición COSMIC/PNF (prelude)**
-  - *Result:* `HALT exit 3 / PENDING_STRATEGY / STRATEGY_NOT_APPROVED` ("No existe measurement-strategy.json") en 4 intentos — compuerta legítima del método, no un defecto. Última attempt: `docs/stories/1-gestion-tareas-api/.medicion/attempts/20260930175616-4439a91f`. Totales oficiales intactos (`SIN_MEDICION`).
+- **Sin fallos de ejecución esta sesión** — el tramo de planificación de dev-rapido corrió limpio (discovery + plan + refinamiento).
+- **Nota de orden (autocorrección):** al guardar `refinamiento.md` se marcó "implementar" como in-progress en el todo-list antes de pedir la aprobación del plan; se corrigió devolviendo el step-01 a in-progress y presentando el plan para aprobación (el workflow exige aprobación ANTES de implementar, §6). No se escribió código.
 
 ## 🔮 6. Next Steps (Pending Tasks)
-1. Commit del trabajo staged en `master` (los commits los hace el usuario; `origin/master` queda en `8e43076 guia`).
-2. Medición de la HU #1: `/ceiba-generar-strategy` (crear/aprobar `docs/cosmic/measurement-strategy.json`) y luego `/ceiba-medir-historia` (story_id 1, dir `docs/stories/1-gestion-tareas-api/`) — el prelude debería pasar `PREPARED_PRELUDE` al existir la estrategia.
-3. Cerrar la infra si ya no se usa: API `start:dev` (terminal background de la sesión anterior, si sigue viva) y Postgres `wsl -d Ubuntu -- bash -lc "cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose down"`.
-4. Definir la HU siguiente: módulo auth JWT (registro/login — hoy el token se genera a mano con `jsonwebtoken`; es la precondición operativa pendiente) y/o recalibrar `docs/architecture/coding-standards.md` contra el código real (oxlint vs ESLint, singleQuote) — follow-up greenfield anotado en `dev-record.md` y `cambios.md`.
+1. Reanudar dev-rapido en **step-02-implement** sobre `docs/stories/2-gestion-tareas-web-ui/` — el plan está en `refinamiento.md`; empezar por T1 (scaffold `tareas-webui` con Vite + React + TS) y seguir T2-T11, luego tests T13-T16 (cubren QA-01..QA-16) y T17 (lint + build + tests 100%).
+2. Infra para probar contra la API viva: Postgres en WSL (`wsl -d Ubuntu -- bash -lc 'cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d'`) y la API `tareas-webapi` con `npm run start:dev` (puerto 3000); la UI usa `VITE_API_BASE_URL` (default `http://localhost:3000`).
+3. Cierre de dev-rapido (**step-03-close/step-03b**): `dev-record.md` (debug log + file list + métricas) y la **medición CFP/PNF** (corre al cierre porque no hay `measurement-strategy.json` APPROVED; ver punto 4).
+4. Medición pendiente (HU #1 y HU #2): `/ceiba-generar-strategy` (crear/aprobar `docs/cosmic/measurement-strategy.json`) y luego `/ceiba-medir-historia` — necesario para que el cierre no se quede en `SIN_MEDICION`.
+5. Push de `e1fc51a` a `origin/master` (los pushes los hace el usuario; local va 1 commit por delante).
+6. HU siguiente: módulo auth JWT (registro/login — la HU #2 lo excluye y su QA-11 asume token inválido para probar el 401).
