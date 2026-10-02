@@ -27,6 +27,18 @@ Repositorio de aprendizaje y desarrollo del **Sistema de Gestión de Tareas**: u
 │   ├── smoke-hu1.js            # Smoke test 14/14 contra la API viva
 │   ├── docker-compose.yml      # PostgreSQL 16 con healthcheck
 │   └── .env.example            # Variables de entorno de referencia
+├── tareas-webui/               # UI web (SPA React) — HU #2
+│   ├── src/
+│   │   ├── main.tsx            # Punto de entrada React
+│   │   ├── App.tsx             # Composición de la vista única
+│   │   ├── config/             # api-config (VITE_API_BASE_URL)
+│   │   ├── types/              # Tarea (redefinida leyendo el backend = frontera)
+│   │   ├── api/                # tareas.client (fetch + Bearer + ApiError por código)
+│   │   ├── hooks/              # use-tareas (CRUD) + use-token (localStorage)
+│   │   └── components/         # token-auth, tarea-form, tarea-list, tarea-item, mensajes
+│   ├── vitest.config.ts        # Tests Vitest + jsdom + Testing Library
+│   ├── .env.example            # VITE_API_BASE_URL
+│   └── README.md               # Puesta en marcha del frontend
 ├── docs/
 │   ├── architecture/           # GPS arquitectónico + coding-standards
 │   └── stories/                # Historias de usuario (Método Ceiba), 1 por carpeta
@@ -74,16 +86,29 @@ Variables de entorno (`.env`):
 | `JWT_SECRET` | — | **Obligatorio cambiar en producción** |
 | `JWT_EXPIRES_IN` | `1h` | Vigencia del token |
 
-### 3. Token JWT (precondición de todas las pruebas)
+### 3. Token JWT (precondición de las pruebas y de la UI)
 
-Hoy no hay módulo auth (registro/login es la HU siguiente); el token se genera a mano:
+Hoy no hay módulo auth (registro/login es la HU siguiente); el token se genera a mano. **Debe firmarse con el mismo `JWT_SECRET` que usa la API** (Nest lo carga del `.env`, no del entorno del shell — si firmas con otro secret, la API responde `401`):
 
-```bash
+```powershell
+cd tareas-webapi
+$secret = (Select-String -Path .env -Pattern '^JWT_SECRET=').Line -replace '^JWT_SECRET='
 # Token de desarrollo, 7 días
-node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.env.JWT_SECRET || 'tareas-dev-secret-2026', {expiresIn:'7d'}))"
+node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.argv[1], {expiresIn:'7d'}))" "$secret"
 ```
 
-Pegar el resultado en `@token` dentro de [`tareas-webapi/http/tareas-api.http`](tareas-webapi/http/tareas-api.http).
+Pegar el resultado en `@token` de [`tareas-webapi/http/tareas-api.http`](tareas-webapi/http/tareas-api.http) (REST Client) y en el campo de autenticación de la UI.
+
+### 4. Frontend (UI — HU #2)
+
+```powershell
+cd tareas-webui
+npm install              # la primera vez
+copy .env.example .env   # si no existe (default: http://localhost:3000)
+npm run dev              # http://localhost:5173
+```
+
+Abre <http://localhost:5173>, pega el token JWT del paso 3 en el campo de autenticación y guárdalo (persiste en `localStorage`). CRUD completo contra la API. Ver [`tareas-webui/README.md`](tareas-webui/README.md).
 
 ## Endpoints
 
@@ -137,6 +162,7 @@ Así el dominio nunca importa TypeORM: el adaptador vive en `infrastructure/` y 
 
 ## Estado del proyecto
 
-- **HU #1** (CRUD de tareas): cerrada — 35/35 tests, smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](docs/stories/1-gestion-tareas-api/).
-- **Pendiente:** módulo auth JWT (registro/login) y medición COSMIC/PNF (requiere `docs/cosmic/measurement-strategy.json` aprobada).
+- **HU #1** (CRUD de tareas, API): cerrada — 35/35 tests, smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](docs/stories/1-gestion-tareas-api/).
+- **HU #2** (UI web de tareas): cerrada — 43 tests (Vitest), QA-01..QA-16 cubiertos, lint 0, build OK. Ver [`docs/stories/2-gestion-tareas-web-ui/`](docs/stories/2-gestion-tareas-web-ui/).
+- **Pendiente:** módulo auth JWT (registro/login) y medición COSMIC/PNF de ambas HUs (requiere `docs/cosmic/measurement-strategy.json` aprobada; hoy `SIN_MEDICION`).
 - Snapshot detallado de la última sesión: [`handoff.md`](handoff.md).

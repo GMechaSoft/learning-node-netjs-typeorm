@@ -1,116 +1,127 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# tareas-webapi — API REST de gestión de tareas (HU #1)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST construida con **NestJS 12 + TypeScript + TypeORM + PostgreSQL 16**. Arquitectura **hexagonal + CQRS + DDD táctico**: el dominio no depende de frameworks; la persistencia es un adaptador plugueado con DI por token.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+| | |
+|---|---|
+| **Stack** | Node.js (dev: 24), TypeScript 6, NestJS 12, TypeORM, PostgreSQL 16, Jest 30 |
+| **Lint / Format** | oxlint (`lint`) + Prettier (`singleQuote: true, trailingComma: all`) |
+| **Endpoints** | `/api/tareas` — CRUD con autenticación JWT Bearer · Swagger en `/docs` |
+| **Infra local** | Docker vía **WSL Ubuntu** (no usar Rancher Desktop) |
 
-## Description
+> Guía completa del stack (backend + frontend): [README raíz](../README.md). Este README cubre solo la API.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Puesta en marcha
 
-## Project setup
+### 1. Base de datos (Docker en WSL Ubuntu)
 
-```bash
-$ npm install
+> Preferencia del proyecto: usar **siempre** el Docker del WSL Ubuntu. El daemon corre como servicio y no requiere arranque manual.
+
+```powershell
+# Subir Postgres (desde PowerShell de Windows)
+wsl -d Ubuntu -- bash -lc 'cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d'
+
+# Verificar healthy (~5-10s tras el arranque)
+wsl -d Ubuntu -- bash -lc 'docker ps --filter name=tareas-postgres'
+
+# Bajar (agregar -v para borrar datos)
+wsl -d Ubuntu -- bash -lc 'cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose down'
 ```
 
-## Compile and run the project
+⚠️ **Comillas**: usa **comillas simples** para comandos bash embebidos en PowerShell si contienen `$`, `{{}}` o redirects — con dobles, PowerShell los expande y corrompe el comando. Detalle completo en [`memories/guia-wsl-docker.md`](../memories/guia-wsl-docker.md).
 
-```bash
-# development
-$ npm run start
+### 2. API
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```powershell
+cd tareas-webapi
+npm install               # la primera vez
+copy .env.example .env    # si no existe (Windows; o: cp .env.example .env)
+npm run start:dev         # http://localhost:3000 — Swagger en /docs
 ```
 
-## Run tests
+### 3. Token JWT (precondición de todas las peticiones)
+
+No hay módulo auth aún (registro/login es la HU siguiente); el token se genera a mano. **Debe firmarse con el mismo `JWT_SECRET` que usa la API** (el de tu `.env`; Nest lo carga del archivo, no del entorno del shell):
+
+```powershell
+cd tareas-webapi
+$secret = (Select-String -Path .env -Pattern '^JWT_SECRET=').Line -replace '^JWT_SECRET='
+node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.argv[1], {expiresIn:'7d'}))" "$secret"
+```
+
+Pegar el resultado en `@token` de [`http/tareas-api.http`](http/tareas-api.http) (REST Client) y en el campo de autenticación de la UI (`tareas-webui`).
+
+## Variables de entorno
+
+`.env` (crear desde `.env.example`; el `.env` está en `.gitignore`):
+
+| Variable | Default | Descripción |
+|---|---|---|
+| `DB_HOST` / `DB_PORT` | `localhost` / `5432` | PostgreSQL |
+| `DB_USER` / `DB_PASSWORD` / `DB_NAME` | `postgres` / `postgres` / `tareas_db` | Credenciales BD |
+| `DB_SYNCHRONIZE` | `true` | Solo desarrollo; en producción usar migraciones |
+| `JWT_SECRET` | — | **Obligatorio cambiar en producción**; firma y verifica tokens |
+| `JWT_EXPIRES_IN` | `1h` | Vigencia del token (módulo auth; los tokens dev se emiten con `expiresIn` manual) |
+
+## Endpoints
+
+Base: `http://localhost:3000/api/tareas` — todas las rutas requieren `Authorization: Bearer <token>`.
+
+| Método | Ruta | Éxito | Errores |
+|---|---|---|---|
+| `POST` | `/tareas` | `201` + tarea creada | `400` título ausente, `401` token |
+| `GET` | `/tareas` | `200` + lista | `401` |
+| `GET` | `/tareas/:id` | `200` + tarea | `404`, `401` |
+| `PUT` | `/tareas/:id` | `200` + tarea actualizada | `400` estado inválido, `404`, `401` |
+| `DELETE` | `/tareas/:id` | `204` | `404`, `401` |
+
+**Modelo `Tarea`:** `{ id, titulo, descripcion (nullable), estado: "pendiente" | "completada", creadaEn }`
+
+Documentación interactiva: <http://localhost:3000/docs> (Swagger, con `addBearerAuth` ya configurado).
+
+## Pruebas
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm test                  # Unitarios + integración (Jest 30) — 35/35
+npm run test:cov          # Con cobertura
+node smoke-hu1.js         # Smoke 14/14 contra API + Postgres vivos
 ```
+
+**Pruebas manuales (REST Client):** abrir `http/tareas-api.http` en VS Code con la extensión **REST Client** (`humao.rest-client`) y ejecutar cada bloque con el CodeLens *Send Request* (o `Ctrl+Alt+R`). El caso `03` (`# @name crearTarea`) es el ancla del flujo encadenado: ejecutarlo primero.
+
+## Comandos del proyecto
+
+| Comando | Descripción |
+|---|---|
+| `npm run start:dev` | Desarrollo con watch |
+| `npm run start:debug` | Desarrollo con debugger (`--inspect-brk`) |
+| `npm run build` | Compila a `dist/` |
+| `npm run start:prod` | Ejecuta `dist/main` |
+| `npm run lint` | `oxlint --type-aware src/` |
+| `npm run format` | Prettier sobre `src/` |
 
 ## Producción
 
 - `npm run build` → `dist/`; `npm run start:prod` ejecuta `node dist/main`.
 - `DB_SYNCHRONIZE=false` y esquema gestionado con migraciones; `JWT_SECRET` con valor real.
 
-## Observability
+## Decisión de arquitectura destacada: DI por token
 
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
+La interfaz `TareaRepository` (en `domain/tarea-repository.port.ts`) es un tipo de TypeScript que se borra en runtime, por lo que NestJS no puede resolverla por nombre. Se inyecta con un `unique symbol`:
 
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-To add it to this project:
-
-```bash
-$ npm install @nestjs/observe
+```typescript
+export const TAREA_REPOSITORY = Symbol('TAREA_REPOSITORY');
+// handler:  constructor(@Inject(TAREA_REPOSITORY) private readonly repo: TareaRepository) {}
+// módulo:   { provide: TAREA_REPOSITORY, useValue: TareaRepositoryImpl }
 ```
 
-Then follow the [setup guide](https://docs.nestjs.com/observability/overview) - it takes a single import and an app key.
+Así el dominio nunca importa TypeORM: el adaptador vive en `infrastructure/` y se pluguea en el módulo de persistencia.
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+## Estado
 
-## Resources
+- **HU #1** (CRUD de tareas): cerrada — 35/35 tests, smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](../docs/stories/1-gestion-tareas-api/).
+- **Pendiente:** módulo auth JWT (registro/login).
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+*Framework: [NestJS](https://docs.nestjs.com) (MIT).*
