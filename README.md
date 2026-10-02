@@ -1,6 +1,6 @@
 # learning-node-netjs-typeorm
 
-Repositorio de aprendizaje y desarrollo del **Sistema de Gestión de Tareas**: una API REST con **NestJS v12 + TypeScript + TypeORM + PostgreSQL**, construida siguiendo el **Método Ceiba** (historias de usuario → plan → implementación → cierre con medición COSMIC/PNF).
+Repositorio de aprendizaje y desarrollo del **Sistema de Gestión de Tareas**: una API REST con **NestJS v12 + TypeScript + TypeORM + PostgreSQL**, una UI web (React), una demo móvil (React Native + Expo) y un empaquetado Docker de demostración — todo construido siguiendo el **Método Ceiba** (historias de usuario → plan → implementación → cierre con medición COSMIC/PNF).
 
 | | |
 |---|---|
@@ -40,12 +40,29 @@ Repositorio de aprendizaje y desarrollo del **Sistema de Gestión de Tareas**: u
 │   ├── vitest.config.ts        # Tests Vitest + jsdom + Testing Library
 │   ├── .env.example            # VITE_API_BASE_URL
 │   └── README.md               # Puesta en marcha del frontend
+├── tareas-mobileui/            # Demo móvil (Expo + React Native + TS) — HU #4
+│   ├── src/
+│   │   ├── app/                # expo-router: vista única (CRUD de tareas)
+│   │   ├── config/             # api-config (EXPO_PUBLIC_API_BASE_URL)
+│   │   ├── api/                # tareas.client + auth.client (fetch + Bearer + ApiError por código)
+│   │   ├── hooks/              # use-tareas (CRUD + autenticación JWT automática, usuario "demo")
+│   │   ├── components/         # tarea-form, tarea-item, mensajes (+ plantilla Expo)
+│   │   ├── types/              # Tarea + declarations de CSS modules
+│   │   └── test/               # Setup Vitest + helpers de render (react-test-renderer)
+│   ├── .env.example            # EXPO_PUBLIC_API_BASE_URL
+│   └── AGENTS.md               # Reglas del proyecto (expo install, tsc + lint obligatorios)
+├── Dockerfile                  # Imagen demo única (front :80 + API :8080 + Postgres efímero) — HU #3
+├── docker/                     # nginx.conf, entrypoint.sh (supervisor), .env demo, README
+├── docker-compose.demo.yml     # Arranque de la demo con 1 comando
+├── .dockerignore               # Control del build context
 ├── docs/
 │   ├── architecture/           # GPS arquitectónico + coding-standards
 │   └── stories/                # Historias de usuario (Método Ceiba), 1 por carpeta
 ├── memories/                   # Memoria del proyecto: guías de hallazgos (WSL/Docker, etc.)
 ├── .ceiba-metodo/              # Tooling del Método Ceiba (hu, plan, implement, medición)
-├── guia.md                     # Guía de referencia NestJS + TypeORM + PostgreSQL
+├── guia-node-webapi.md         # Guía de referencia NestJS + TypeORM + PostgreSQL
+├── guia-react-web.md           # Guía de referencia del stack UI web (Vite + React + TS)
+├── guia-react-mobile.md        # Guía de referencia del stack móvil (Expo + React Native + TS)
 └── handoff.md                  # Snapshot de estado del desarrollo (handoff entre sesiones)
 ```
 
@@ -112,6 +129,37 @@ npm run dev              # http://localhost:5173
 
 Abre <http://localhost:5173>, escribe tu **nombre de usuario** en el campo de autenticación y pulsa **Entrar** (la app emite el token y lo guarda en `localStorage`). CRUD completo contra la API. Ver [`tareas-webui/README.md`](tareas-webui/README.md).
 
+### 5. Frontend móvil (demo Expo — HU #4)
+
+App dirigida al **entorno móvil** (Android/iOS vía **Expo Go**). La vista web es solo una conveniencia para desarrollo.
+
+```powershell
+cd tareas-mobileui
+npm install                      # la primera vez
+npx expo start                   # escanea el QR con Expo Go (Android/iOS)
+```
+
+> Requisito: la app móvil debe estar en la **misma red** que la máquina donde corre la API, y `EXPO_PUBLIC_API_BASE_URL` debe apuntar a la **IP local** de esa máquina (no a `localhost`, que en el teléfono se refiere al propio teléfono). La vista web (`npx expo start --web` → http://localhost:8081) sirve para probar sin teléfono.
+
+La demo móvil tiene **autenticación JWT automática** (emite el token sola con el usuario `demo`; no se pide usuario) y CRUD completo igual que la webui.
+
+| Variable | Default | Descripción |
+|---|---|---|
+| `EXPO_PUBLIC_API_BASE_URL` | `http://localhost:3000` | URL base de la API (se inyecta en el bundle en build) |
+
+> Para apuntar a otra instancia (otra máquina, otro puerto): crea un `.env.local` (o `.env`) con esa URL **y reinicia `expo start`** (Expo no recarga variables `EXPO_PUBLIC_*` en caliente). Ver `tareas-mobileui/.env.example` y [`guia-react-mobile.md`](guia-react-mobile.md).
+
+### 6. Demo Docker (todo en una imagen — HU #3)
+
+Imagen única con **front :80 + API :8080 + PostgreSQL efímero** (no expuesta). En desarrollo, desde la raíz:
+
+```powershell
+docker compose -f docker-compose.demo.yml up --build -d
+# Front: http://localhost   |   API/Swagger: http://localhost:8080/docs
+```
+
+El paquete de entrega autocontenido (imagen `tareas-demo.tar` + `LEEME.md`) vive en la carpeta local `entrega-cliente/`, **fuera de git** (contiene binarios pesados; está en `.gitignore`). Ver también [`docker/README.md`](docker/README.md).
+
 ## Endpoints
 
 Base: `http://localhost:3000/api`. La ruta `/auth/token` es **pública**; el resto requieren `Authorization: Bearer <token>`.
@@ -133,7 +181,7 @@ Documentación interactiva: <http://localhost:3000/docs> (Swagger, con `addBeare
 
 ```bash
 cd tareas-webapi
-npm test                  # Unitarios + integración (Jest 30) — 35/35
+npm test                  # Unitarios + integración (Jest 30) — 40/40 (35 tareas + 5 auth)
 npm run test:cov          # Con cobertura
 node smoke-hu1.js         # Smoke 14/14 contra API + Postgres vivos
 ```
@@ -165,7 +213,9 @@ Así el dominio nunca importa TypeORM: el adaptador vive en `infrastructure/` y 
 
 ## Estado del proyecto
 
-- **HU #1** (CRUD de tareas, API): cerrada — 35/35 tests, smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](docs/stories/1-gestion-tareas-api/).
-- **HU #2** (UI web de tareas): cerrada — 43 tests (Vitest), QA-01..QA-16 cubiertos, lint 0, build OK. Ver [`docs/stories/2-gestion-tareas-web-ui/`](docs/stories/2-gestion-tareas-web-ui/).
-- **Pendiente:** módulo auth con registro/login real (hoy la autenticación de desarrollo emite el token con cualquier usuario vía `POST /auth/token`) y medición COSMIC/PNF de ambas HUs (requiere `docs/cosmic/measurement-strategy.json` aprobada; hoy `SIN_MEDICION`).
+- **HU #1** (CRUD de tareas, API): cerrada — 40/40 tests (Jest), smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](docs/stories/1-gestion-tareas-api/).
+- **HU #2** (UI web de tareas): cerrada — 50 tests (Vitest), QA-01..QA-16 cubiertos, lint 0, build OK. Ver [`docs/stories/2-gestion-tareas-web-ui/`](docs/stories/2-gestion-tareas-web-ui/).
+- **HU #3** (Empaquetado Docker demo — front + back + BD en una imagen): cerrada — QA-01..QA-11 verificados en vivo (build, puertos, CRUD E2E, persistencia efímera). Ver [`docs/stories/3-empaquetado-docker-demo/`](docs/stories/3-empaquetado-docker-demo/).
+- **HU #4** (Demo móvil de tareas — Expo + React Native + TS): cerrada — 28 tests (Vitest), QA-01..QA-14 cubiertos (incl. puerto configurable verificado en vivo contra :4000), auth JWT automática (usuario `demo`), lint/typecheck 0. Ver [`docs/stories/4-demo-tareas-mobile/`](docs/stories/4-demo-tareas-mobile/).
+- **Pendiente:** módulo auth con registro/login real (hoy la autenticación de desarrollo emite el token con cualquier usuario vía `POST /auth/token`) y medición COSMIC/PNF de las HUs (requiere `docs/cosmic/measurement-strategy.json` aprobada; hoy `SIN_MEDICION`).
 - Snapshot detallado de la última sesión: [`handoff.md`](handoff.md).

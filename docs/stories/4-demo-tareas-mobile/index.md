@@ -2,7 +2,7 @@
 story_number: 4
 title: "Demo móvil de tareas (React Native + Expo)"
 slug: "demo-tareas-mobile"
-estado: "En Desarrollo (Dev-Rápido)"
+estado: "Lista para Revisión"
 autor: "Gerson Sanchez"
 fecha_creacion: "2026-10-01"
 es_resultado_slicing: false
@@ -42,11 +42,11 @@ medicion_attempt_status:
 medicion_attempt_at:
 medicion_attempt_reason:
 normalization_contract_hash:
-dev_ia_session_minutes:
-dev_manual_minutes:
-dev_total_minutes:
-dev_responsable:
-dev_closed_at:
+dev_ia_session_minutes: 48
+dev_manual_minutes: 0
+dev_total_minutes: 48
+dev_responsable: gerson.sanchez
+dev_closed_at: "2026-10-02 00:35"
 ---
 
 # Historia #4: Demo móvil de tareas (React Native + Expo)
@@ -58,7 +58,8 @@ dev_closed_at:
 | Creación HU | ✅ Completada | 2026-10-01 | Gerson Sanchez |
 | Medición COSMIC | ⏳ Pendiente | | PO/Analista |
 | Refinamiento | ✅ Completada | 2026-10-01 | Gerson Sanchez |
-| Desarrollo | ⏳ Pendiente | | Developer |
+| Desarrollo | ✅ Completada (Dev-Rápido) | 2026-10-02 | gerson.sanchez |
+| Revisión | ⏳ Pendiente | | Developer |
 
 ## Archivos de esta Historia
 
@@ -76,7 +77,7 @@ dev_closed_at:
 | Fase        | Inicio           | Fin |
 | ----------- | ---------------- | --- |
 | Creación HU | 2026-10-01 23:46 |     |
-| Desarrollo  | 2026-10-01 23:52 |     |
+| Desarrollo  | 2026-10-01 23:52 | 2026-10-02 00:35 |
 
 ---
 

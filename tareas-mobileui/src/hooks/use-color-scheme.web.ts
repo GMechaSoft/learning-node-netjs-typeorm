@@ -7,8 +7,11 @@ import { useColorScheme as useRNColorScheme } from 'react-native';
 export function useColorScheme() {
   const [hasHydrated, setHasHydrated] = useState(false);
 
+  // El setState se agenda en una callback (frame) para no ejecutarlo de forma
+  // síncrona en el cuerpo del efecto (regla react-hooks/set-state-in-effect).
   useEffect(() => {
-    setHasHydrated(true);
+    const id = requestAnimationFrame(() => setHasHydrated(true));
+    return () => cancelAnimationFrame(id);
   }, []);
 
   const colorScheme = useRNColorScheme();

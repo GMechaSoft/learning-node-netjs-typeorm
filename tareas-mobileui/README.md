@@ -1,56 +1,113 @@
-# Welcome to your Expo app 👋
+# tareas-mobileui — Demo móvil de gestión de tareas (HU #4)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App móvil de una sola vista construida con **React Native + Expo (SDK 57) + TypeScript** que consume la API REST de tareas (HU #1, [`tareas-webapi`](../tareas-webapi)). Ofrece **CRUD completo** — listar, crear, editar, cambiar estado (`pendiente`/`completada`) y eliminar — con **autenticación JWT automática**: la app emite su propio token al iniciar con el usuario de demostración `demo`; **no se pide login**.
 
-## Get started
+| | |
+|---|---|
+| **Stack** | Expo SDK 57, React Native 0.86, React 19, TypeScript 6, expo-router |
+| **Tests** | Vitest + jsdom + `react-test-renderer` — 28 tests, cubre QA-01..QA-14 |
+| **API base** | `EXPO_PUBLIC_API_BASE_URL` (default `http://localhost:3000`) |
 
-1. Install dependencies
+> Guía completa del stack (backend + frontend): [README raíz](../README.md). Este README cubre solo la app móvil.
 
-   ```bash
-   npm install
-   ```
+## Puesta en marcha
 
-2. Start the app
+### 1. Precondición: la API debe estar levantada
 
-   ```bash
-   npx expo start
-   ```
+La app no hace nada sin el backend. Levanta primero (ver [README de la API](../tareas-webapi/README.md)):
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```powershell
+# Postgres (WSL Ubuntu) + API en http://localhost:3000
+wsl -d Ubuntu -- bash -lc 'cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d'
+cd tareas-webapi
+copy .env.example .env    # si no existe
+npm run start:dev
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. App móvil
 
-### Other setup steps
+```powershell
+cd tareas-mobileui
+npm install                      # la primera vez
+copy .env.example .env.local     # si no existe (default: http://localhost:3000)
+npx expo start                   # muestra el QR
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+La app está **dirigida al entorno móvil**: abre **Expo Go** (Android/iOS) en el teléfono y escanea el QR. La app se descarga y corre en el dispositivo.
 
-## Learn more
+> **Red:** el teléfono y la máquina con la API deben estar en la **misma red WiFi**, y `EXPO_PUBLIC_API_BASE_URL` debe apuntar a la **IP local** de esa máquina (p. ej. `http://192.168.1.10:3000`), no a `localhost` — en el teléfono, `localhost` es el propio teléfono.
+>
+> **Conveniencia de desarrollo:** también corre en el navegador con `npx expo start --web` (http://localhost:8081), útil para probar sin teléfono.
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Usar la app
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Al abrir, la app **autentica sola**: emite el token JWT (`POST /api/auth/token` con el usuario `demo`) y carga el listado. Si un 401 aparece después (token expirado), re-emite una vez y reintenta.
+2. Listado, crear (título obligatorio, descripción opcional), editar, cambiar estado y eliminar funcionan contra la API.
+3. Los errores se muestran con mensajes genéricos por código de respuesta (mismo criterio que la webui).
 
-## Join the community
+> La autenticación es de demostración (sin usuario ni contraseña): el **backend firma el JWT con su `JWT_SECRET`**, que vive en el servidor — la app nunca maneja el secret.
 
-Join our community of developers creating universal apps.
+## Variables de entorno
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+`.env` / `.env.local` (crear desde `.env.example`; ambos están en `.gitignore`):
+
+| Variable | Default | Descripción |
+|---|---|---|
+| `EXPO_PUBLIC_API_BASE_URL` | `http://localhost:3000` | URL base de la API de tareas (dirección **y puerto**) |
+
+> **Expo inyecta `EXPO_PUBLIC_*` en el bundle en tiempo de build** (no existe `import.meta.env` como en Vite). Para apuntar a otra instancia de la API (otra máquina, otro puerto), define la variable y **reinicia `expo start`**: los cambios no se aplican en caliente.
+
+## Estructura
+
+```
+src/
+├── app/
+│   ├── _layout.tsx               # Stack de expo-router (vista única)
+│   └── index.tsx                 # La vista: formulario + listado + mensajes
+├── config/
+│   └── api-config.ts             # API_BASE_URL desde EXPO_PUBLIC_API_BASE_URL + usuario demo
+├── types/
+│   └── tarea.ts                  # Tarea + EstadoTarea (redefinidos leyendo el backend = frontera)
+├── api/
+│   ├── tareas.client.ts          # fetch + Bearer + ApiError con mensaje genérico por código (400/401/404/5xx/red)
+│   └── auth.client.ts            # emitirToken: POST /api/auth/token (sin Bearer)
+├── hooks/
+│   └── use-tareas.ts             # Hook CRUD + autenticación automática (emite token en mount; re-emite 1 vez en 401)
+├── components/
+│   ├── tarea-form.tsx            # Formulario crear/editar (título obligatorio, descripción opcional)
+│   ├── tarea-item.tsx            # Fila: título, descripción, selector de estado, editar, eliminar
+│   └── mensajes.tsx              # Mensajes de éxito y error genéricos
+│   # + componentes de la plantilla Expo (themed-text, themed-view, ui/collapsible, etc.)
+└── test/
+    ├── setup.ts                  # Setup Vitest (jsdom + jest-dom)
+    └── test-utils.tsx            # renderHook (react-test-renderer: RTL no soporta RN 0.86 / SDK 57)
+```
+
+**Flujo de datos:** componente → `use-tareas` (estado + validación + auth) → `tareas.client` (HTTP) → API. El token viaja como header `Authorization: Bearer`.
+
+## Comandos
+
+| Comando | Descripción |
+|---|---|
+| `npx expo start` | Servidor de desarrollo (Expo) — QR para **Expo Go** (Android/iOS, el entorno dirigido) |
+| `npx expo start --web` | Solo la vista web (conveniencia de desarrollo, :8081) |
+| `npx tsc --noEmit` | Type-check (obligatorio antes de dar por hecho un cambio) |
+| `npx expo lint` | ESLint sobre el proyecto (obligatorio) |
+| `npm test` | Suite completa (Vitest) — 28 tests |
+| `npm run test:watch` | Vitest en modo watch |
+
+> Al agregar paquetes usa siempre `npx expo install <pkg>` (resuelve las versiones compatibles con el SDK), no `npm install`.
+
+## Reglas de negocio implementadas (ver `historia.md`/`qa.md` de la HU #4)
+
+- **Título obligatorio** (trim): vacío o solo espacios no envía petición a la API.
+- **Descripción opcional**; **estado inicial** `pendiente`.
+- **API configurable** por `EXPO_PUBLIC_API_BASE_URL` (dirección y puerto; verificado en vivo contra un puerto distinto, :4000).
+- **Autenticación JWT automática** con usuario `demo`: emite el token al iniciar; ante un 401 re-emite **una** vez y reintenta.
+- **Errores genéricos por código** (no se exponen detalles): `400` datos inválidos, `401` token ausente/inválido, `404` tarea inexistente, `5xx` error del servidor, `red` no se puede conectar.
+
+---
+
+## Nota sobre el template de Expo
+
+Este proyecto partió del template oficial de [`create-expo-app`](https://www.npmjs.com/package/create-expo-app) (blank + expo-router). Se mantuvieron los componentes temáticos de la plantilla (`themed-text`, `themed-view`, etc.); el código de la app vive en `src/app`, `src/api`, `src/hooks`, `src/components` y `src/config`. Para el stack de tests se eligió **Vitest + jsdom + `react-test-renderer`** (React Testing Library no soporta todavía RN 0.86 / Expo SDK 57), con mocks de `globalThis.fetch`.
