@@ -22,6 +22,7 @@ Repositorio de aprendizaje y desarrollo del **Sistema de Gestión de Tareas**: u
 │   │   │   ├── application/    # CQRS: commands (crear/actualizar/eliminar) + queries (listar/obtener)
 │   │   │   ├── infrastructure/ # Adaptador TypeORM (entity, repository impl, módulo)
 │   │   │   └── api/            # Borde: controller + DTOs (class-validator)
+│   │   ├── modules/auth/       # Auth de desarrollo: emite token JWT por usuario (POST /auth/token)
 │   │   └── shared/guards/      # JwtAuthGuard (CanActivate + JwtService)
 │   ├── http/tareas-api.http    # 14 casos de prueba REST Client (ext. humao.rest-client)
 │   ├── smoke-hu1.js            # Smoke test 14/14 contra la API viva
@@ -33,9 +34,9 @@ Repositorio de aprendizaje y desarrollo del **Sistema de Gestión de Tareas**: u
 │   │   ├── App.tsx             # Composición de la vista única
 │   │   ├── config/             # api-config (VITE_API_BASE_URL)
 │   │   ├── types/              # Tarea (redefinida leyendo el backend = frontera)
-│   │   ├── api/                # tareas.client (fetch + Bearer + ApiError por código)
-│   │   ├── hooks/              # use-tareas (CRUD) + use-token (localStorage)
-│   │   └── components/         # token-auth, tarea-form, tarea-list, tarea-item, mensajes
+│   │   ├── api/                # tareas.client + auth.client (fetch + Bearer + ApiError por código)
+│   │   ├── hooks/              # use-tareas (CRUD) + use-usuario (login + token en localStorage)
+│   │   └── components/         # usuario-auth, tarea-form, tarea-list, tarea-item, mensajes
 │   ├── vitest.config.ts        # Tests Vitest + jsdom + Testing Library
 │   ├── .env.example            # VITE_API_BASE_URL
 │   └── README.md               # Puesta en marcha del frontend
@@ -86,18 +87,19 @@ Variables de entorno (`.env`):
 | `JWT_SECRET` | — | **Obligatorio cambiar en producción** |
 | `JWT_EXPIRES_IN` | `1h` | Vigencia del token |
 
-### 3. Token JWT (precondición de las pruebas y de la UI)
+### 3. Token JWT (autenticación por nombre de usuario)
 
-Hoy no hay módulo auth (registro/login es la HU siguiente); el token se genera a mano. **Debe firmarse con el mismo `JWT_SECRET` que usa la API** (Nest lo carga del `.env`, no del entorno del shell — si firmas con otro secret, la API responde `401`):
+Basta un **nombre de usuario**: la API emite el token JWT (firmado con su `JWT_SECRET`, que vive en el backend y nunca en el cliente). Es la ruta pública de autenticación de desarrollo:
 
 ```powershell
-cd tareas-webapi
-$secret = (Select-String -Path .env -Pattern '^JWT_SECRET=').Line -replace '^JWT_SECRET='
-# Token de desarrollo, 7 días
-node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.argv[1], {expiresIn:'7d'}))" "$secret"
+# Emite un token para un usuario (200 -> { "token": "..." })
+Invoke-RestMethod -Uri "http://localhost:3000/api/auth/token" -Method POST -ContentType "application/json" -Body '{"usuario":"gerson.sanchez"}'
 ```
 
-Pegar el resultado en `@token` de [`tareas-webapi/http/tareas-api.http`](tareas-webapi/http/tareas-api.http) (REST Client) y en el campo de autenticación de la UI.
+- **UI:** solo se pide el usuario en el campo de autenticación; la app llama a `POST /api/auth/token` y guarda el token en `localStorage`.
+- **REST Client:** usa `POST {{baseUrl}}/auth/token` del [`.http`](tareas-webapi/http/tareas-api.http) para obtener el token y pegarlo en `@token`.
+
+> Todavía no hay registro/login: cualquier usuario no vacío emite un token (el claim `sub` es el nombre). Ver tabla de endpoints.
 
 ### 4. Frontend (UI — HU #2)
 
@@ -108,14 +110,15 @@ copy .env.example .env   # si no existe (default: http://localhost:3000)
 npm run dev              # http://localhost:5173
 ```
 
-Abre <http://localhost:5173>, pega el token JWT del paso 3 en el campo de autenticación y guárdalo (persiste en `localStorage`). CRUD completo contra la API. Ver [`tareas-webui/README.md`](tareas-webui/README.md).
+Abre <http://localhost:5173>, escribe tu **nombre de usuario** en el campo de autenticación y pulsa **Entrar** (la app emite el token y lo guarda en `localStorage`). CRUD completo contra la API. Ver [`tareas-webui/README.md`](tareas-webui/README.md).
 
 ## Endpoints
 
-Base: `http://localhost:3000/api/tareas` — todas las rutas requieren `Authorization: Bearer <token>`.
+Base: `http://localhost:3000/api`. La ruta `/auth/token` es **pública**; el resto requieren `Authorization: Bearer <token>`.
 
 | Método | Ruta | Éxito | Errores |
 |---|---|---|---|
+| `POST` | `/auth/token` | `200` + `{ token }` (pública) | `400` usuario vacío |
 | `POST` | `/tareas` | `201` + tarea creada | `400` título ausente, `401` token |
 | `GET` | `/tareas` | `200` + lista | `401` |
 | `GET` | `/tareas/:id` | `200` + tarea | `404`, `401` |
@@ -164,5 +167,5 @@ Así el dominio nunca importa TypeORM: el adaptador vive en `infrastructure/` y 
 
 - **HU #1** (CRUD de tareas, API): cerrada — 35/35 tests, smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](docs/stories/1-gestion-tareas-api/).
 - **HU #2** (UI web de tareas): cerrada — 43 tests (Vitest), QA-01..QA-16 cubiertos, lint 0, build OK. Ver [`docs/stories/2-gestion-tareas-web-ui/`](docs/stories/2-gestion-tareas-web-ui/).
-- **Pendiente:** módulo auth JWT (registro/login) y medición COSMIC/PNF de ambas HUs (requiere `docs/cosmic/measurement-strategy.json` aprobada; hoy `SIN_MEDICION`).
+- **Pendiente:** módulo auth con registro/login real (hoy la autenticación de desarrollo emite el token con cualquier usuario vía `POST /auth/token`) y medición COSMIC/PNF de ambas HUs (requiere `docs/cosmic/measurement-strategy.json` aprobada; hoy `SIN_MEDICION`).
 - Snapshot detallado de la última sesión: [`handoff.md`](handoff.md).

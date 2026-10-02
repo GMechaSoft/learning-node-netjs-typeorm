@@ -1,45 +1,64 @@
-# 🚀 Development Handoff: HU #2 UI Web de Gestión de Tareas — Dev-Rápido (plan/refinamiento guardado) + commit "planificación UI"
+# 🚀 Development Handoff: Documentación de puesta en marcha + reorden de tarjeta de tarea + cambio de autenticación por nombre de usuario
 
-**Date:** 2026-10-01 19:54  
+**Date:** 2026-10-01 21:38  
 **Repository Branch:** master
 
 ---
 
 ## 🎯 1. Objective
-- Ejecutar el workflow **dev-rapido** del Método Ceiba sobre la HU #2 (frontend React TS/JSX de la app de tareas en `/tareas-webui`, src en `/tareas-webui/src`), consumiendo la API REST ya entregada (HU #1). Entregable final: la UI CRUD completa + tests. Esta sesión completó el tramo de planificación (step-00 hu + step-01 plan) y guardó el `refinamiento.md`; la implementación quedó pendiente de aprobar el plan.
+- Dejar documentada la puesta en marcha completa del sistema (backend + frontend) para que cualquiera pueda levantar los proyectos; reordenar la tarjeta de tarea de la UI (estado junto al título, descripción en medio, botones abajo); y **cambiar la forma de autenticar**: basta con ingresar un nombre de usuario para que el backend emita el token JWT (el `JWT_SECRET` vive en el servidor, nunca en el cliente).
 
 ## 📊 2. Current Status
-- **Status:** In Progress
-- Dev-rápido a mitad de camino: **step-00 (hu)** y **step-01 (plan)** completados — se leyó la feature análoga (backend `tareas-webapi`), se hizo el inventario de reutilización, se diseñó el plan y se guardó `docs/stories/2-gestion-tareas-web-ui/refinamiento.md` (17 tareas, 6 fases) con la fase "Refinamiento Técnico" marcada ✅ en `index.md`. **El plan quedó pendiente de aprobación del usuario** (el workflow exige aprobación ANTES de implementar, §6). **NO se escribió ninguna línea de código frontend** — `tareas-webui/` no existe. Todo está commitado en `e1fc51a planificación UI` (HEAD local, 1 commit por delante de `origin/master` `cacbbdc`); working tree limpio.
+- **Status:** Ready for Testing
+- Todo implementado, commiteado Y pushado: HEAD `d45ed9b` = `origin/master` (worktree limpio, 0 pendientes). Verificado end-to-end en vivo antes de parar la infra: `POST /api/auth/token` → 200, el token emitido pasa `GET /api/tareas` → 200, usuario solo-espacios → 400. Tests: **backend 40/40** (35 tareas + 5 auth), **frontend 50/50**, lint 0 en ambos, build OK. **Toda la infra está DETENIDA al cierre de la sesión** (API, UI y Postgres caídos; contenedor `tareas-postgres` y red `tareas-webapi_default` eliminados con `docker compose down`).
 
 ## 🗂️ 3. Files in Progress
-**HU #2 (nueva, commitada en e1fc51a):**
-- `docs/stories/2-gestion-tareas-web-ui/refinamiento.md` — plan dev-rapido (nuevo esta sesión): plan arquitectónico + inventario de reutilización + 17 tareas T1-T17 en 6 fases (scaffold Vite+React+TS, tipos/cliente HTTP, hooks useTareas/useToken, componentes TokenAuth/TareaForm/TareaList/TareaItem/Mensajes/App, tests Vitest+Testing Library, verificación)
-- `docs/stories/2-gestion-tareas-web-ui/index.md` — fase "Refinamiento Técnico" = ✅ Completada 2026-10-01; métrica "Desarrollo" con inicio 19:48 (sin fin)
-- (resto del paquete de historia de la sesión anterior, ya commitado aquí: `historia.md`, `qa.md`, `2.preview.md`, `especificacion.md`, `cambios.md`)
+**Commit `9c4605d` (docs) — guías de puesta en marcha:**
+- `README.md` (raíz) — reescrito: precondiciones, pasos de levantamiento (Postgres WSL + `start:dev` + dev UI), paso 3 de token, paso 4 Frontend, estado HUs
+- `tareas-webapi/README.md` — reescrito (antes era boilerplate de NestJS): WSL, endpoints, token, variables, DI por token
 
-**Otros (commitados en e1fc51a):**
-- `docs/cosmic/measurement-decisions.json` — registro de decisiones del método (continuidad + frontera, ambas `po_confirmado`)
-- `docs/stories/1-gestion-tareas-api/.medicion/.gitignore` (modificado) + 3 `attempt.json` eliminados (limpieza de los intentos de medición HALT de la HU #1)
-- `guia.md -> guia-webapi.md` (rename) y `tareas-webapi/guia-react-web.md` (referencia del stack frontend)
+**Commit `0817844` (feat webui) — tarjeta de tarea + tipado:**
+- `tareas-webui/src/components/tarea-item.tsx` — cabecera (título + badge de estado), descripción en medio, acciones abajo
+- `tareas-webui/src/components/tarea-item.css` — item a columna, `.tarea-item__cabecera` a fila; eliminadas clases `__contenido`/`__estado`
+- `tareas-webui/src/vite-env.d.ts` — tipado de `ImportMetaEnv.VITE_API_BASE_URL`
 
-**Pendiente crear (no existe aún):**
-- `tareas-webui/` — proyecto Vite + React + TypeScript (scaffold T1, primera tarea del plan)
+**Commit `d45ed9b` (feat auth) — 21 archivos, +711/−263:**
+- `tareas-webapi/src/modules/auth/api/auth.controller.ts` — `POST /auth/token` pública: firma JWT con `JWT_SECRET` (claim `sub` = usuario), `BadRequestException` si tras el trim queda vacío
+- `tareas-webapi/src/modules/auth/api/dto/emitir-token.dto.ts` — `IsString`/`IsNotEmpty`/`MaxLength(120)`
+- `tareas-webapi/src/modules/auth/api/auth.controller.spec.ts` — 5 tests (200 verificable con `JwtService.verify`, trim, 400 solo-espacios, 400 vacío, 400 sin usuario)
+- `tareas-webapi/src/modules/auth/auth.module.ts` + `tareas-webapi/src/app.module.ts` — registro del módulo
+- `tareas-webui/src/api/auth.client.ts` — `emitirToken(usuario)` (fetch POST, sin Bearer)
+- `tareas-webui/src/api/auth.client.test.ts` — 4 tests (POST + payload + sin Authorization, URL por env, 400, red)
+- `tareas-webui/src/hooks/use-usuario.ts` — `useUsuario()`: persiste `tareas-webui:usuario` + `tareas-webui:token` en localStorage, `iniciarSesion` (emite), `cerrarSesion`, `emitiendo`
+- `tareas-webui/src/hooks/use-usuario.test.ts` — 7 tests
+- `tareas-webui/src/components/usuario-auth.tsx` + `.css` — campo Usuario + Entrar/Salir + botones Ver/Copiar token
+- `tareas-webui/src/App.tsx` + `App.test.tsx` — flujo de login por usuario (7 tests, incl. login interactivo con user-event)
+- **Eliminados:** `tareas-webui/src/components/token-auth.tsx`/`.css`, `tareas-webui/src/hooks/use-token.ts`/`.test.ts`
+- `tareas-webapi/http/tareas-api.http` — nuevo caso `00 · POST /auth/token`; `@token` vacío (se rellena con el 00); instrucciones actualizadas
+- `README.md`, `tareas-webapi/README.md`, `tareas-webui/README.md` — auth por usuario en introducciones, pasos de uso, estructura y tablas de endpoints
 
 ## 🛠️ 4. Changes Made
-- **step-00-hu:** requerimiento = HU #2; HU existente encontrada en `docs/stories/2-gestion-tareas-web-ui/`; guard `verificar-tracker` no-op (tracker ya `ninguna`).
-- **step-01-plan (discovery):** leyó la feature análoga ya implementada (backend `tareas-webapi`: controller, entity, DTOs, main.ts) para extraer el contrato HTTP (códigos 201/200/204/400/401/404/5xx, forma de `Tarea`, campos de los DTOs) y las convenciones (`singleQuote`, kebab-case, async/await). §2c de medición se **omitió** (no existe `docs/cosmic/measurement-strategy.json` APPROVED) → la medición CFP correrá al cierre (step-03b).
-- **Plan + refinamiento.md:** arquitectura = SPA de una vista (Vite + React + TS, cliente fino → custom hook → componentes). 17 tareas en 6 fases; los tests (T13-T16) mapean a QA-01..QA-16. Inventario de reutilización: consume el backend (frontier), redefine en cliente los tipos leyendo el backend, reutiliza convenciones de `coding-standards.md`, crea el proyecto `tareas-webui` y su stack de tests (Vitest + Testing Library).
-- **Git:** el usuario commitó todo en `e1fc51a planificación UI` (incluye el `refinamiento.md` generado esta sesión).
+- **Autenticación por usuario (cambio de forma de autenticar):** nueva ruta pública `POST /api/auth/token` en `modules/auth` (NestJS, DI de `JwtService` global). El backend firma el token con su `JWT_SECRET` del `.env` y devuelve `{ "token": "..." }`. La UI (`usuario-auth` + `use-usuario` + `auth.client`) pide el nombre de usuario, emite el token, lo persiste en `localStorage` y lo usa como `Authorization: Bearer` en `/tareas` (validado por `JwtAuthGuard`, sin cambios en el guard). El navegador nunca maneja el secret. Todavía no hay registro/login: cualquier usuario no vacío emite un token.
+- **Tarjeta de tarea:** `tarea-item.tsx` reestructurado (cabecera título+estado / descripción / acciones abajo) + `vite-env.d.ts` tipando la variable de entorno.
+- **Documentación:** 3 READMEs + `.http` alineados con la nueva auth (el comando manual de `jsonwebtoken` queda como nota histórica; el flujo canónico es `POST /auth/token`).
+- **Infra al cierre:** los 3 servicios detenidos (API watch, Vite, Postgres) a petición del usuario.
 
 ## ⚠️ 5. Attempts and Failures
-- **Sin fallos de ejecución esta sesión** — el tramo de planificación de dev-rapido corrió limpio (discovery + plan + refinamiento).
-- **Nota de orden (autocorrección):** al guardar `refinamiento.md` se marcó "implementar" como in-progress en el todo-list antes de pedir la aprobación del plan; se corrigió devolviendo el step-01 a in-progress y presentando el plan para aprobación (el workflow exige aprobación ANTES de implementar, §6). No se escribió código.
+- **`IsNotEmpty` deja pasar `'   '` (solo espacios)**
+  - *Result:* test 400 devolvió 200 (el pipe valida vacío literal, no trim). Corrección: chequeo explícito `if (usuario.length === 0) throw new BadRequestException` tras el `trim()` en `auth.controller.ts` (el DTO sigue con `IsNotEmpty` para el string vacío; 2 tests de 400, uno por camino).
+- **`instanceof ApiError` tras `vi.resetModules()`**
+  - *Result:* `expected ApiError ... to be an instance of ApiError` en `auth.client.test.ts`: el import dinámico post-reset instancia una clase `ApiError` distinta a la importada estáticamente. Corrección: comprobar por propiedades (`error.name === 'ApiError'`, `error.status === 'red'`) como hacen los tests existentes; se quitó el import estático.
+- **`npx jest` sin flag ESM**
+  - *Result:* `Must use import to load ES Module: .../@nestjs/common/index.js`. Corrección: usar siempre `npm run test` (el script lleva `node --experimental-vm-modules`).
+- **`Set-Location` perdido al simplificarse el comando async**
+  - *Result:* `npm run start:dev` corrió en la raíz del workspace → `ENOENT package.json`. Corrección: reenviar el comando con el `Set-Location` al mismo terminal.
+- **HMR Vite `ReferenceError: TokenAuth is not defined`**
+  - *Result:* error transitorio durante la edición (HMR capturó una versión intermedia de `App.tsx` con imports nuevos y JSX viejo al borrar `token-auth`). Se resolvió solo con la actualización HMR final; tests 50/50 lo confirman.
+- **IDE: `Cannot find module './modules/tareas/tareas.module'` en `app.module.ts`**
+  - *Result:* falso positivo del language server (cache). `npm run build` (nest build) compila en verde y el watch de la API arrancó el módulo sin problema.
 
 ## 🔮 6. Next Steps (Pending Tasks)
-1. Reanudar dev-rapido en **step-02-implement** sobre `docs/stories/2-gestion-tareas-web-ui/` — el plan está en `refinamiento.md`; empezar por T1 (scaffold `tareas-webui` con Vite + React + TS) y seguir T2-T11, luego tests T13-T16 (cubren QA-01..QA-16) y T17 (lint + build + tests 100%).
-2. Infra para probar contra la API viva: Postgres en WSL (`wsl -d Ubuntu -- bash -lc 'cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d'`) y la API `tareas-webapi` con `npm run start:dev` (puerto 3000); la UI usa `VITE_API_BASE_URL` (default `http://localhost:3000`).
-3. Cierre de dev-rapido (**step-03-close/step-03b**): `dev-record.md` (debug log + file list + métricas) y la **medición CFP/PNF** (corre al cierre porque no hay `measurement-strategy.json` APPROVED; ver punto 4).
-4. Medición pendiente (HU #1 y HU #2): `/ceiba-generar-strategy` (crear/aprobar `docs/cosmic/measurement-strategy.json`) y luego `/ceiba-medir-historia` — necesario para que el cierre no se quede en `SIN_MEDICION`.
-5. Push de `e1fc51a` a `origin/master` (los pushes los hace el usuario; local va 1 commit por delante).
-6. HU siguiente: módulo auth JWT (registro/login — la HU #2 lo excluye y su QA-11 asume token inválido para probar el 401).
+1. Levantar la infra si se va a seguir trabajando (ahora todo está caído): Postgres WSL (`wsl -d Ubuntu -- bash -lc 'cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d'`), API (`npm run start:dev` en `tareas-webapi`), UI (`npm run dev` en `tareas-webui`).
+2. HU siguiente — registro/login real: hoy `POST /auth/token` emite el token con cualquier usuario no vacío; falta persistencia de usuarios, contraseña y verificación (precondición operativa pendiente que quedó cubierto su esqueleto con el módulo `auth`).
+3. Medición COSMIC/PNF de HU #1 y HU #2 (ambas `SIN_MEDICION`): primero `/ceiba-generar-strategy` (crear/aprobar `docs/cosmic/measurement-strategy.json`) y luego `/ceiba-medir-historia` por historia.
+4. Recalibrar `docs/architecture/coding-standards.md` contra el código real (follow-up greenfield anotado en `dev-record.md` y `cambios.md`).

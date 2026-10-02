@@ -1,0 +1,29 @@
+# Contexto de build de la imagen demo (raiz del workspace).
+# Se reconstruyen dentro de la imagen; no se envian al daemon.
+**/node_modules
+**/dist
+**/coverage
+**/.vite
+*.tsbuildinfo
+
+# Secretos y archivos locales: nunca dentro de la imagen (se inyectan por env).
+**/.env
+**/.env.*
+
+# VCS / editor
+.git
+.gitignore
+.vscode
+.idea
+*.log
+.DS_Store
+*.code-workspace
+
+# Documentacion y memorias del proyecto (no son parte de la imagen)
+docs/
+memories/
+*.md
+handoff.md
+
+# Otras apps no incluidas en esta imagen
+tareas-mobile-ui/

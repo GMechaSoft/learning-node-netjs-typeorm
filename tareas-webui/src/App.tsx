@@ -2,19 +2,19 @@ import { useEffect, useState } from 'react';
 import { Mensajes } from './components/mensajes';
 import { TareaForm, type ValoresTareaForm } from './components/tarea-form';
 import { TareaList } from './components/tarea-list';
-import { TokenAuth } from './components/token-auth';
-import { useToken } from './hooks/use-token';
+import { UsuarioAuth } from './components/usuario-auth';
+import { useUsuario } from './hooks/use-usuario';
 import { useTareas } from './hooks/use-tareas';
 import type { Tarea } from './types/tarea';
 import './App.css';
 
 /**
- * Composición de la única vista (SPA): autenticación + formulario + listado + mensajes.
- * Carga el listado al montar si hay token guardado; al guardar/cambiar el token
- * se vuelve a cargar con el nuevo; al quitarlo se limpia el listado.
+ * Composición de la única vista (SPA): autenticación por usuario + formulario + listado
+ * + mensajes. Al montar, si hay sesión guardada (usuario + token) carga el listado;
+ * al iniciar sesión se emite el token y se vuelve a cargar; al salir se limpia el listado.
  */
 export default function App() {
-  const { token, guardarToken, limpiarToken } = useToken();
+  const { usuario, token, emitiendo, iniciarSesion, cerrarSesion } = useUsuario();
   const { tareas, cargando, accionEnCurso, mensaje, cargar, crear, actualizar, cambiarEstado, eliminar, descartarMensaje } =
     useTareas(token);
   const [tareaEnEdicion, setTareaEnEdicion] = useState<Tarea | null>(null);
@@ -25,8 +25,8 @@ export default function App() {
     }
   }, [token, cargar]);
 
-  const manejarLimpiarToken = () => {
-    limpiarToken();
+  const manejarCerrarSesion = () => {
+    cerrarSesion();
     setTareaEnEdicion(null);
   };
 
@@ -54,7 +54,13 @@ export default function App() {
         <h1>Gestión de tareas</h1>
       </header>
 
-      <TokenAuth tokenInicial={token} onGuardar={guardarToken} onLimpiar={manejarLimpiarToken} />
+      <UsuarioAuth
+        usuarioInicial={usuario}
+        token={token}
+        emitiendo={emitiendo}
+        onIniciarSesion={(u) => void iniciarSesion(u)}
+        onCerrar={manejarCerrarSesion}
+      />
 
       <Mensajes mensaje={mensaje} onDescartar={descartarMensaje} />
 
@@ -79,7 +85,7 @@ export default function App() {
       ) : (
         <main className="app__cuerpo app__cuerpo--sin-token">
           <p className="app__sin-token">
-            Guarda un token JWT arriba para ver y gestionar tus tareas.
+            Escribe tu usuario arriba y pulsa Entrar para ver y gestionar tus tareas.
           </p>
         </main>
       )}

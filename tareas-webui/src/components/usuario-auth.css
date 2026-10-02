@@ -1,0 +1,103 @@
+.usuario-auth {
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid #d8d8e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.usuario-auth__etiqueta {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.usuario-auth__fila {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.usuario-auth__campo {
+  flex: 1 1 240px;
+  padding: 6px 10px;
+  border: 1px solid #c8c8d0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.usuario-auth__guardar,
+.usuario-auth__limpiar {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.usuario-auth__guardar {
+  background: #2563eb;
+  color: #fff;
+}
+
+.usuario-auth__guardar:hover:not(:disabled) {
+  background: #1d4fd8;
+}
+
+.usuario-auth__limpiar {
+  background: #ececf1;
+  color: #333;
+}
+
+.usuario-auth__limpiar:hover:not(:disabled) {
+  background: #dcdce4;
+}
+
+.usuario-auth__guardar:disabled,
+.usuario-auth__limpiar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.usuario-auth__estado {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.usuario-auth__token {
+  margin-top: 10px;
+}
+
+.usuario-auth__token-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+.usuario-auth__ver,
+.usuario-auth__copiar {
+  padding: 4px 10px;
+  border: 1px solid #c8c8d0;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.usuario-auth__ver:hover,
+.usuario-auth__copiar:hover {
+  background: #f1f1f6;
+}
+
+.usuario-auth__token-valor {
+  margin-top: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #c8c8d0;
+  border-radius: 6px;
+  background: #f7f7fa;
+  font-size: 0.72rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-all;
+  color: #333;
+}

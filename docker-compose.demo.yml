@@ -1,0 +1,20 @@
+# Arranque de conveniencia de la demo (una sola imagen: front + back + BD).
+#
+#   docker compose -f docker-compose.demo.yml up
+#
+# Front: http://localhost          (puerto 80)
+# API:   http://localhost:8080/docs (Swagger)
+# BD:    NO expuesta (solo localhost interno, efimera)
+services:
+  tareas-demo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tareas-demo:latest
+    container_name: tareas-demo
+    env_file:
+      - ./docker/.env
+    ports:
+      - "80:80"
+      - "8080:8080"
+    # Sin volumen: la base de datos es efimera (se re-crea al recrear el contenedor).

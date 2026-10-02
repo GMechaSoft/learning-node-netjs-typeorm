@@ -8,12 +8,13 @@
 #        wsl -d Ubuntu -- bash -lc "cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d"
 #   2. API:
 #        npm run start:dev     (o: npm run build && npm run start:prod)
-#   3. Token JWT (dev, 7 días) — si expira, regenerar y pegar en @token:
-#        node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.env.JWT_SECRET || 'tareas-dev-secret-2026', {expiresIn:'7d'}))"
+#   3. Token JWT — se emite por nombre de usuario (caso 00 de este archivo):
+#        ejecuta "00 · AUTH · POST /auth/token" y pega el token devuelto en @token.
 #
 # CÓMO USAR:
 #   - Click en "Send Request" (CodeLens) sobre cada bloque, o Ctrl+Alt+R.
 #   - Los comentarios "# ..." entre bloques indican el resultado ESPERADO.
+#   - Ejecuta PRIMERO el caso 00 (POST /auth/token) y pega el token devuelto en @token.
 #   - El flujo encadenado (07, 09, 11, 12, 13, 14) usa el id del request
 #     "# @name crearTarea" (03): ejecuta 03 primero y luego el resto.
 #   - Para reiniciar el flujo completo: borrar la base (docker compose down -v)
@@ -21,7 +22,22 @@
 # ============================================================================
 
 @baseUrl = http://localhost:3000/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiaWF0IjoxNzkwNzkyMzUwLCJleHAiOjE3OTEzOTcxNTB9.xoOb5mlA2ogUIRcoNe1ZWgP6EFPb-efgWzsDn3lIIcU
+# Token dev: ejecuta el caso "00 · AUTH · POST /auth/token" (abajo) y pega aquí el valor devuelto.
+@token = 
+
+
+###
+
+# ============================================================================
+# 00 · AUTH · POST /auth/token con usuario -> ESPERADO: 200 {"token":"..."}
+#      (pública; el token devuelto se pega en @token para los casos 03+)
+# ============================================================================
+POST {{baseUrl}}/auth/token
+Content-Type: application/json
+
+{
+  "usuario": "gerson.sanchez"
+}
 
 ###
 

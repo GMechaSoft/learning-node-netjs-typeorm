@@ -6,7 +6,7 @@ API REST construida con **NestJS 12 + TypeScript + TypeORM + PostgreSQL 16**. Ar
 |---|---|
 | **Stack** | Node.js (dev: 24), TypeScript 6, NestJS 12, TypeORM, PostgreSQL 16, Jest 30 |
 | **Lint / Format** | oxlint (`lint`) + Prettier (`singleQuote: true, trailingComma: all`) |
-| **Endpoints** | `/api/tareas` — CRUD con autenticación JWT Bearer · Swagger en `/docs` |
+| **Endpoints** | `/api/tareas` (CRUD, JWT Bearer) · `/api/auth/token` (emisión por usuario) · Swagger en `/docs` |
 | **Infra local** | Docker vía **WSL Ubuntu** (no usar Rancher Desktop) |
 
 > Guía completa del stack (backend + frontend): [README raíz](../README.md). Este README cubre solo la API.
@@ -39,17 +39,20 @@ copy .env.example .env    # si no existe (Windows; o: cp .env.example .env)
 npm run start:dev         # http://localhost:3000 — Swagger en /docs
 ```
 
-### 3. Token JWT (precondición de todas las peticiones)
+### 3. Token JWT (autenticación por nombre de usuario)
 
-No hay módulo auth aún (registro/login es la HU siguiente); el token se genera a mano. **Debe firmarse con el mismo `JWT_SECRET` que usa la API** (el de tu `.env`; Nest lo carga del archivo, no del entorno del shell):
+Basta un **nombre de usuario**: el módulo auth (`modules/auth/`) emite el token con su `JWT_SECRET` (vive en el backend, nunca en el cliente). La ruta es pública y devuelve `{ "token": "..." }`:
 
 ```powershell
-cd tareas-webapi
-$secret = (Select-String -Path .env -Pattern '^JWT_SECRET=').Line -replace '^JWT_SECRET='
-node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.argv[1], {expiresIn:'7d'}))" "$secret"
+# 200 -> { "token": "eyJ..." }
+Invoke-RestMethod -Uri "http://localhost:3000/api/auth/token" -Method POST -ContentType "application/json" -Body '{"usuario":"gerson.sanchez"}'
 ```
 
-Pegar el resultado en `@token` de [`http/tareas-api.http`](http/tareas-api.http) (REST Client) y en el campo de autenticación de la UI (`tareas-webui`).
+- El token se valida igual que antes en `/tareas` (`JwtAuthGuard`); el claim `sub` es el nombre de usuario.
+- **REST Client:** usa `POST {{baseUrl}}/auth/token` de [`http/tareas-api.http`](http/tareas-api.http) para obtenerlo y pegarlo en `@token`.
+- **UI:** solo pide el usuario; la app llama a esta ruta y guarda el token en `localStorage`.
+
+> Todavía no hay registro/login: cualquier usuario no vacío emite un token. En producción sustituir por un flujo con credenciales.
 
 ## Variables de entorno
 
@@ -61,14 +64,15 @@ Pegar el resultado en `@token` de [`http/tareas-api.http`](http/tareas-api.http)
 | `DB_USER` / `DB_PASSWORD` / `DB_NAME` | `postgres` / `postgres` / `tareas_db` | Credenciales BD |
 | `DB_SYNCHRONIZE` | `true` | Solo desarrollo; en producción usar migraciones |
 | `JWT_SECRET` | — | **Obligatorio cambiar en producción**; firma y verifica tokens |
-| `JWT_EXPIRES_IN` | `1h` | Vigencia del token (módulo auth; los tokens dev se emiten con `expiresIn` manual) |
+| `JWT_EXPIRES_IN` | `1h` | Vigencia del token emitido por `/auth/token` |
 
 ## Endpoints
 
-Base: `http://localhost:3000/api/tareas` — todas las rutas requieren `Authorization: Bearer <token>`.
+Base: `http://localhost:3000/api`. La ruta `/auth/token` es **pública**; el resto requieren `Authorization: Bearer <token>`.
 
 | Método | Ruta | Éxito | Errores |
 |---|---|---|---|
+| `POST` | `/auth/token` | `200` + `{ token }` (pública) | `400` usuario vacío |
 | `POST` | `/tareas` | `201` + tarea creada | `400` título ausente, `401` token |
 | `GET` | `/tareas` | `200` + lista | `401` |
 | `GET` | `/tareas/:id` | `200` + tarea | `404`, `401` |
@@ -82,7 +86,7 @@ Documentación interactiva: <http://localhost:3000/docs> (Swagger, con `addBeare
 ## Pruebas
 
 ```bash
-npm test                  # Unitarios + integración (Jest 30) — 35/35
+npm test                  # Unitarios + integración (Jest 30) — 40/40 (35 tareas + 5 auth)
 npm run test:cov          # Con cobertura
 node smoke-hu1.js         # Smoke 14/14 contra API + Postgres vivos
 ```
@@ -119,8 +123,9 @@ Así el dominio nunca importa TypeORM: el adaptador vive en `infrastructure/` y 
 
 ## Estado
 
-- **HU #1** (CRUD de tareas): cerrada — 35/35 tests, smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](../docs/stories/1-gestion-tareas-api/).
-- **Pendiente:** módulo auth JWT (registro/login).
+- **HU #1** (CRUD de tareas): cerrada — 40/40 tests, smoke 14/14, flujo `.http` 14/14. Ver [`docs/stories/1-gestion-tareas-api/`](../docs/stories/1-gestion-tareas-api/).
+- **Auth de desarrollo:** `POST /auth/token` emite el token con un nombre de usuario (cambió la forma de autenticar; el secret vive en el backend).
+- **Pendiente:** registro/login real (hoy cualquier usuario no vacío emite un token).
 
 ---
 

@@ -4,6 +4,7 @@ import { JwtModule, type JwtModuleOptions, type JwtSignOptions } from "@nestjs/j
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TareaEntity } from './modules/tareas/infrastructure/tarea.entity';
 import { TareasModule } from './modules/tareas/tareas.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TareasModule } from './modules/tareas/tareas.module';
       }),
     }),
     TareasModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
