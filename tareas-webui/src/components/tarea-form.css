@@ -1,0 +1,71 @@
+.tarea-form {
+  border: 1px solid #d8d8e0;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+}
+
+.tarea-form__titulo {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+}
+
+.tarea-form__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tarea-form__campo label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.tarea-form__campo input,
+.tarea-form__campo textarea,
+.tarea-form__campo select {
+  padding: 6px 10px;
+  border: 1px solid #c8c8d0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.tarea-form__error {
+  color: #b02a2a;
+  font-size: 0.85rem;
+}
+
+.tarea-form__acciones {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.tarea-form__acciones button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  background: #2563eb;
+  color: #fff;
+}
+
+.tarea-form__acciones button:disabled {
+  background: #9db9f0;
+  cursor: not-allowed;
+}
+
+.tarea-form__cancelar {
+  background: #ececf1 !important;
+  color: #333 !important;
+}
+
+.tarea-form__cancelar:hover {
+  background: #dcdce4 !important;
+}

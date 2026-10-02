@@ -1,0 +1,38 @@
+.mensajes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+}
+
+.mensajes--exito {
+  background: #e7f6e9;
+  border-color: #b7dfc0;
+  color: #1e5a2a;
+}
+
+.mensajes--validacion {
+  background: #fff4e0;
+  border-color: #f0d9a8;
+  color: #7a5a10;
+}
+
+.mensajes--error {
+  background: #fdecec;
+  border-color: #f2c1c1;
+  color: #8a1f1f;
+}
+
+.mensajes__cerrar {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+}
