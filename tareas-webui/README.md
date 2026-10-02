@@ -1,75 +1,111 @@
-# React + TypeScript + Vite
+# tareas-webui — UI web de gestión de tareas (HU #2)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA de **una sola vista** construida con **Vite + React 19 + TypeScript**. Consume la API REST de tareas (HU #1, [`tareas-webapi`](../tareas-webapi)) y ofrece CRUD completo: listado, crear, actualizar, cambiar estado y eliminar, con autenticación por **token JWT persistente** (localStorage) y mensajes genéricos de error por código de respuesta.
 
-Currently, two official plugins are available:
+| | |
+|---|---|
+| **Stack** | Vite 8, React 19, TypeScript ~6, ESLint (flat config) |
+| **Tests** | Vitest + jsdom + Testing Library — 43 tests, cubre QA-01..QA-16 |
+| **API base** | `VITE_API_BASE_URL` (default `http://localhost:3000`) |
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> Guía completa del stack (backend + frontend): [README raíz](../README.md). Este README cubre solo el frontend.
 
-## React Compiler
+## Puesta en marcha
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Precondición: la API debe estar levantada
 
-## Expanding the ESLint configuration
+La UI no hace nada sin el backend. Levanta primero (ver [README de la API](../tareas-webapi/README.md)):
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+# Postgres (WSL Ubuntu) + API en http://localhost:3000
+wsl -d Ubuntu -- bash -lc 'cd /mnt/d/workspace/learning/learning-node-netjs-typeorm/tareas-webapi && docker compose up -d'
+cd tareas-webapi
+copy .env.example .env    # si no existe
+npm run start:dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Frontend
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```powershell
+cd tareas-webui
+npm install              # la primera vez
+copy .env.example .env   # si no existe (default: http://localhost:3000)
+npm run dev              # http://localhost:5173
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 3. Usar la UI
+
+1. Abre <http://localhost:5173>.
+2. Pega un **token JWT** en el campo de autenticación y guárdalo. Se persiste en `localStorage` (sobrevive a recargas; reemplazarlo usa el nuevo).
+3. Listado, crear, editar, cambiar estado (`pendiente`/`completada`) y eliminar funcionan contra la API.
+
+**Token de desarrollo** (7 días) — no hay módulo auth aún (HU siguiente). Debe firmarse con el **mismo `JWT_SECRET` que usa la API** (el de tu `.env` del backend):
+
+```powershell
+cd tareas-webapi
+$secret = (Select-String -Path .env -Pattern '^JWT_SECRET=').Line -replace '^JWT_SECRET='
+node -e "console.log(require('jsonwebtoken').sign({sub:'1'}, process.argv[1], {expiresIn:'7d'}))" "$secret"
+```
+
+## Variables de entorno
+
+`.env` (crear desde `.env.example`; el `.env` está en `.gitignore`):
+
+| Variable | Default | Descripción |
+|---|---|---|
+| `VITE_API_BASE_URL` | `http://localhost:3000` | URL base de la API de tareas |
+
+> Para apuntar a otra instancia de la API (otra máquina, otro puerto), crea un `.env` local con esa URL y reinicia `npm run dev`.
+
+## Estructura
 
 ```
+src/
+├── main.tsx                  # Punto de entrada React
+├── App.tsx / App.css         # Composición de la vista única
+├── config/
+│   └── api-config.ts         # API_BASE_URL desde VITE_API_BASE_URL
+├── types/
+│   └── tarea.ts              # Tarea + EstadoTarea (redefinidos leyendo el backend = frontera)
+├── api/
+│   └── tareas.client.ts      # fetch + Bearer + ApiError con mensaje genérico por código (400/401/404/5xx/red)
+├── hooks/
+│   ├── use-tareas.ts         # Hook CRUD: lista, crear, actualizar, estado, eliminar, validación, mensajes
+│   └── use-token.ts          # Token en estado + persistencia localStorage (guardar/reemplazar/limpiar)
+├── components/
+│   ├── token-auth.tsx        # Campo de autenticación
+│   ├── tarea-form.tsx        # Formulario crear/editar (título obligatorio, descripción opcional)
+│   ├── tarea-list.tsx        # Listado: "Cargando…" / vacío / error / items
+│   ├── tarea-item.tsx        # Fila: título, descripción, selector de estado, editar, eliminar
+│   └── mensajes.tsx          # Mensajes de éxito y error genéricos
+└── test/
+    └── setup.ts              # Setup Vitest (jsdom + cleanup de Testing Library)
+```
+
+**Flujo de datos:** componente → `use-tareas` (estado + validación) → `tareas.client` (HTTP) → API. La autenticación vive en `use-token`; el token viaja como header `Authorization: Bearer`.
+
+## Comandos
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Servidor de desarrollo (Vite, HMR) en :5173 |
+| `npm run build` | Compila a `dist/` (con type-check de `tsc -b`) |
+| `npm run preview` | Sirve el build de producción localmente |
+| `npm run lint` | ESLint sobre el proyecto |
+| `npm test` | Suite completa (Vitest) — 43 tests |
+| `npm run test:watch` | Vitest en modo watch |
+| `npm run test:cov` | Suite con cobertura (v8) |
+
+## Reglas de negocio implementadas (ver `historia.md`/`qa.md` de la HU #2)
+
+- **Título obligatorio** (trim): vacío o solo espacios no envía petición a la API.
+- **Descripción opcional**; **estado inicial** `pendiente`.
+- **URL base configurable** por `VITE_API_BASE_URL`.
+- **Token persistente** en `localStorage`; guardar vacío equivale a limpiar.
+- **Errores genéricos por código** (no se exponen detalles): `400` datos inválidos, `401` token ausente/inválido, `404` tarea inexistente, `5xx` error del servidor, `red` no se puede conectar.
+
+---
+
+## Nota sobre el template de Vite
+
+Este proyecto partió del template oficial de Vite (React + TS). Se mantuvo `@vitejs/plugin-react` y la config de ESLint es una **flat config** (`eslint.config.js`) con `tseslint` recommended + `react-hooks` + `react-refresh`, más Vitest/Testing Library para los tests. El template original documenta cómo pasar a reglas type-aware (`tseslint.configs.recommendedTypeChecked`) o añadir `eslint-plugin-react-x`/`eslint-plugin-react-dom`; ver el historial de `eslint.config.js` si quieres esas opciones.

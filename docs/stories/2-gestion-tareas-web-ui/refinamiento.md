@@ -58,30 +58,30 @@
 ### Tareas de Implementación
 
 #### Fase 1 — Scaffold del proyecto
-- [ ] **T1: Inicializar `tareas-webui` con Vite + React + TypeScript** — `tareas-webui/` (Base: `guia-react-web.md` §1) → `package.json`, `vite.config.ts`, `tsconfig.json`/`tsconfig.node.json`, `index.html`, `src/main.tsx` (`createRoot` + `StrictMode`), `src/vite-env.d.ts`, `.gitignore`, `.prettierrc` (singleQuote)
-- [ ] **T2: Variables de entorno y config** — `tareas-webui/.env.example` + `src/config/api-config.ts` (Base: contrato `main.ts` del backend) → `VITE_API_BASE_URL` (default `http://localhost:3000`), exporta `API_BASE`
+- [x] **T1: Inicializar `tareas-webui` con Vite + React + TypeScript** — `tareas-webui/` (Base: `guia-react-web.md` §1) → `package.json`, `vite.config.ts`, `tsconfig.json`/`tsconfig.node.json`, `index.html`, `src/main.tsx` (`createRoot` + `StrictMode`), `src/vite-env.d.ts`, `.gitignore`, `.prettierrc` (singleQuote)
+- [x] **T2: Variables de entorno y config** — `tareas-webui/.env.example` + `src/config/api-config.ts` (Base: contrato `main.ts` del backend) → `VITE_API_BASE_URL` (default `http://localhost:3000`), exporta `API_BASE`
 
 #### Fase 2 — Dominio cliente y API
-- [ ] **T3: Tipos de dominio** — `src/types/tarea.ts` (Base: `tarea.entity.ts` + DTOs) → `EstadoTarea = 'pendiente'|'completada'`, `Tarea`, `CrearTareaDto`, `ActualizarTareaDto`
-- [ ] **T4: Cliente HTTP fino + mapeo de errores** — `src/api/tareas.client.ts` (Base: `tareas.controller.ts` + `coding-standards` §5) → `listar/crear/actualizar/eliminar` con `fetch` + `Authorization: Bearer`; función pura `mapearError(status|red)` → mensaje genérico (400/401/404/5xx/red); `async/await`, sin tragar errores
+- [x] **T3: Tipos de dominio** — `src/types/tarea.ts` (Base: `tarea.entity.ts` + DTOs) → `EstadoTarea = 'pendiente'|'completada'`, `Tarea`, `CrearTareaDto`, `ActualizarTareaDto`
+- [x] **T4: Cliente HTTP fino + mapeo de errores** — `src/api/tareas.client.ts` (Base: `tareas.controller.ts` + `coding-standards` §5) → `listar/crear/actualizar/eliminar` con `fetch` + `Authorization: Bearer`; función pura `mapearError(status|red)` → mensaje genérico (400/401/404/5xx/red); `async/await`, sin tragar errores
 
 #### Fase 3 — Estado (custom hooks)
-- [ ] **T5: `useTareas`** — `src/hooks/use-tareas.ts` (Base: `guia-react-web.md` §5/§8) → estado `[tareas, cargando, mensaje]`; acciones `crear/actualizar/cambiarEstado/eliminar`; valida título en cliente **antes** de llamar a la API (AC7); aplica mensaje de éxito/error; actualiza la lista tras cada mutación
-- [ ] **T6: `useToken` (persistencia)** — `src/hooks/use-token.ts` (Base: AC6) → token en `localStorage`, `guardarToken`/`limpiarToken`; sobrevive a la recarga; expone `token` + `guardarToken`
+- [x] **T5: `useTareas`** — `src/hooks/use-tareas.ts` (Base: `guia-react-web.md` §5/§8) → estado `[tareas, cargando, mensaje]`; acciones `crear/actualizar/cambiarEstado/eliminar`; valida título en cliente **antes** de llamar a la API (AC7); aplica mensaje de éxito/error; actualiza la lista tras cada mutación
+- [x] **T6: `useToken` (persistencia)** — `src/hooks/use-token.ts` (Base: AC6) → token en `localStorage`, `guardarToken`/`limpiarToken`; sobrevive a la recarga; expone `token` + `guardarToken`
 
 #### Fase 4 — Componentes de UI
-- [ ] **T7: `Mensajes`** — `src/components/mensajes.tsx` + `.css` (Base: `2.preview.md` "zona de mensajes") → zona única de feedback (éxito/validación/error)
-- [ ] **T8: `TokenAuth`** — `src/components/token-auth.tsx` + `.css` (Base: AC6) → campo de texto + botón guardar; rellena con el token guardado
-- [ ] **T9: `TareaForm`** — `src/components/tarea-form.tsx` + `.css` (Base: `guia-react-web.md` §7, AC2/3/7) → modo crear y modo editar; campos controlados título/descripción/estado; valida título (vacío/espacios) sin llamar a la API; Cancelar; botón Enviar deshabilitado en vuelo
-- [ ] **T10: `TareaItem` + `TareaList`** — `src/components/tarea-item.tsx`/`tarea-list.tsx` + `.css` (Base: `2.preview.md`, AC1/4/5) → fila por tarea (título, descripción, estado) con acciones editar/cambiar estado/eliminar; estado vacío "No hay tareas"; indicador "Cargando…"
-- [ ] **T11: `App`** — `src/App.tsx` + `src/App.css` (Base: `2.preview.md`) → composición de la única vista; carga el listado al montar si hay token (useEffect); enlaza hooks y componentes
+- [x] **T7: `Mensajes`** — `src/components/mensajes.tsx` + `.css` (Base: `2.preview.md` "zona de mensajes") → zona única de feedback (éxito/validación/error)
+- [x] **T8: `TokenAuth`** — `src/components/token-auth.tsx` + `.css` (Base: AC6) → campo de texto + botón guardar; rellena con el token guardado
+- [x] **T9: `TareaForm`** — `src/components/tarea-form.tsx` + `.css` (Base: `guia-react-web.md` §7, AC2/3/7) → modo crear y modo editar; campos controlados título/descripción/estado; valida título (vacío/espacios) sin llamar a la API; Cancelar; botón Enviar deshabilitado en vuelo
+- [x] **T10: `TareaItem` + `TareaList`** — `src/components/tarea-item.tsx`/`tarea-list.tsx` + `.css` (Base: `2.preview.md`, AC1/4/5) → fila por tarea (título, descripción, estado) con acciones editar/cambiar estado/eliminar; estado vacío "No hay tareas"; indicador "Cargando…"
+- [x] **T11: `App`** — `src/App.tsx` + `src/App.css` (Base: `2.preview.md`) → composición de la única vista; carga el listado al montar si hay token (useEffect); enlaza hooks y componentes
 
 #### Fase 5 — Tests (Vitest + Testing Library)
-- [ ] **T12: Setup de tests** — `vitest.config.ts` (o en `vite.config.ts`), `src/test/setup.ts`, `@testing-library/react` + `jest-dom` + `user-event` (Base: `qa.md`) → scripts `test`/`test:cov`
-- [ ] **T13: `tareas.client.test.ts`** — mapeo de errores (cubre: QA-11 401, QA-12 404, QA-13 5xx, QA-14 red, QA-15 400) + URL base por env (QA-16) — referencia: `tareas.controller.ts`
-- [ ] **T14: `use-tareas.test.ts`** — hook: listado (QA-01, QA-02), crear con/sin descripción (QA-03), actualizar (QA-04), cambiar estado (QA-05), eliminar (QA-06), validación título sin llamar API (QA-09, QA-10), indicador de carga (QA-16)
-- [ ] **T15: `use-token.test.ts`** — persistencia en `localStorage` (QA-07), reemplazo de token (QA-08)
-- [ ] **T16: `App.test.tsx` (render)** — integración render: muestra listado cargado, estados de carga, mensajes de error sin bloquear (QA-01, QA-11, QA-14, QA-16)
+- [x] **T12: Setup de tests** — `vitest.config.ts` (o en `vite.config.ts`), `src/test/setup.ts`, `@testing-library/react` + `jest-dom` + `user-event` (Base: `qa.md`) → scripts `test`/`test:cov`
+- [x] **T13: `tareas.client.test.ts`** — mapeo de errores (cubre: QA-11 401, QA-12 404, QA-13 5xx, QA-14 red, QA-15 400) + URL base por env (QA-16) — referencia: `tareas.controller.ts`
+- [x] **T14: `use-tareas.test.ts`** — hook: listado (QA-01, QA-02), crear con/sin descripción (QA-03), actualizar (QA-04), cambiar estado (QA-05), eliminar (QA-06), validación título sin llamar API (QA-09, QA-10), indicador de carga (QA-16)
+- [x] **T15: `use-token.test.ts`** — persistencia en `localStorage` (QA-07), reemplazo de token (QA-08)
+- [x] **T16: `App.test.tsx` (render)** — integración render: muestra listado cargado, estados de carga, mensajes de error sin bloquear (QA-01, QA-11, QA-14, QA-16)
 
 #### Fase 6 — Verificación
-- [ ] **T17: Lint + build + tests** — `npm run lint` / `npm run build` / `npm run test` (0 errores, build OK, 100% de tests pasando)
+- [x] **T17: Lint + build + tests** — `npm run lint` / `npm run build` / `npm run test` (0 errores, build OK, 100% de tests pasando)

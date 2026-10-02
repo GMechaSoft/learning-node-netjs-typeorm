@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { EstadoTarea, Tarea } from '../types/tarea';
 import './tarea-form.css';
 
@@ -17,30 +17,18 @@ interface TareaFormProps {
 
 /**
  * Formulario de tarea con modo crear (tarea=null) y modo editar (tarea!=null).
- * Valida el título en el cliente sin llamar a la API (AC7); el botón Enviar se
- * deshabilita mientras hay una acción en vuelo.
+ * El estado inicial se deriva de la tarea en el montaje: el padre re-monta el
+ * formulario con una `key` distinta por cada tarea en edición, así no hace
+ * falta un efecto para rellenarlo. Valida el título en el cliente sin llamar a
+ * la API (AC7); el botón Enviar se deshabilita mientras hay una acción en vuelo.
  */
 export function TareaForm({ tarea, enCurso, onSubmit, onCancelar }: TareaFormProps) {
-  const [valorTitulo, setValorTitulo] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [estado, setEstado] = useState<EstadoTarea>('pendiente');
+  const [valorTitulo, setValorTitulo] = useState(tarea?.titulo ?? '');
+  const [descripcion, setDescripcion] = useState(tarea?.descripcion ?? '');
+  const [estado, setEstado] = useState<EstadoTarea>(tarea?.estado ?? 'pendiente');
   const [errorTitulo, setErrorTitulo] = useState(false);
 
-  // Al cambiar la tarea en edición, rellenar el formulario con sus valores.
-  useEffect(() => {
-    if (tarea) {
-      setValorTitulo(tarea.titulo);
-      setDescripcion(tarea.descripcion ?? '');
-      setEstado(tarea.estado);
-    } else {
-      setValorTitulo('');
-      setDescripcion('');
-      setEstado('pendiente');
-    }
-    setErrorTitulo(false);
-  }, [tarea]);
-
-  const manejarEnviar = (evento: React.FormEvent) => {
+  const manejarEnviar = (evento: FormEvent) => {
     evento.preventDefault();
     if (valorTitulo.trim().length === 0) {
       setErrorTitulo(true);

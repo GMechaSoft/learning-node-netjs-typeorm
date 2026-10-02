@@ -2,7 +2,7 @@
 story_number: 2
 title: "UI web de gestión de tareas"
 slug: "gestion-tareas-web-ui"
-estado: "Borrador (PO)"
+estado: "Lista para Revisión"
 autor: "Gerson Sanchez"
 fecha_creacion: "2026-10-01"
 es_resultado_slicing: false
@@ -42,11 +42,11 @@ medicion_attempt_status:
 medicion_attempt_at:
 medicion_attempt_reason:
 normalization_contract_hash:
-dev_ia_session_minutes:
-dev_manual_minutes:
-dev_total_minutes:
-dev_responsable:
-dev_closed_at:
+dev_ia_session_minutes: 41
+dev_manual_minutes: 0
+dev_total_minutes: 41
+dev_responsable: gerson.sanchez
+dev_closed_at: "2026-10-01 20:29"
 ---
 
 # Historia #2: UI web de gestión de tareas
@@ -62,7 +62,7 @@ dev_closed_at:
 | Análisis Arquitectónico | ⏳ Pendiente | | Arquitecto |
 | Refinamiento Técnico | ✅ Completada | 2026-10-01 | Gerson Sanchez |
 | Estimación | ⏳ Pendiente | | Developer |
-| Desarrollo | ⏳ Pendiente | | Developer |
+| Desarrollo | ✅ Completada (Dev-Rápido) | 2026-10-01 | gerson.sanchez |
 
 ## Archivos de esta Historia
 
@@ -85,7 +85,7 @@ dev_closed_at:
 | Fase        | Inicio                    | Fin |
 | ----------- | ------------------------- | --- |
 | Creación HU | 2026-10-01 19:29          | 2026-10-01 19:34 |
-| Desarrollo  | 2026-10-01 19:48          |     |
+| Desarrollo  | 2026-10-01 19:48          | 2026-10-01 20:29 |
 
 ---
 

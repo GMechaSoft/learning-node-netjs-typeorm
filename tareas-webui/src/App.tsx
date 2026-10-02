@@ -23,13 +23,7 @@ export default function App() {
     if (token) {
       void cargar();
     }
-    // Solo al montar y cuando cambia el token (la identidad de cargar).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, cargar]);
-
-  const manejarGuardarToken = (nuevo: string) => {
-    guardarToken(nuevo);
-  };
 
   const manejarLimpiarToken = () => {
     limpiarToken();
@@ -60,13 +54,14 @@ export default function App() {
         <h1>Gestión de tareas</h1>
       </header>
 
-      <TokenAuth tokenInicial={token} onGuardar={manejarGuardarToken} onLimpiar={manejarLimpiarToken} />
+      <TokenAuth tokenInicial={token} onGuardar={guardarToken} onLimpiar={manejarLimpiarToken} />
 
       <Mensajes mensaje={mensaje} onDescartar={descartarMensaje} />
 
       {token ? (
         <main className="app__cuerpo">
           <TareaForm
+            key={tareaEnEdicion ? `editar-${tareaEnEdicion.id}` : 'crear'}
             tarea={tareaEnEdicion}
             enCurso={accionEnCurso}
             onSubmit={manejarSubmit}
