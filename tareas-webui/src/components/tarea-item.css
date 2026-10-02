@@ -1,7 +1,8 @@
 .tarea-item {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
   padding: 10px 12px;
   border: 1px solid #e2e2ea;
   border-radius: 8px;
@@ -13,16 +14,17 @@
   box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 
-.tarea-item__contenido {
-  flex: 1 1 auto;
+.tarea-item__cabecera {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 10px;
   min-width: 0;
 }
 
 .tarea-item__titulo {
   font-weight: 600;
+  flex: 1 1 auto;
+  min-width: 0;
   word-break: break-word;
 }
 
@@ -36,10 +38,6 @@
   color: #555;
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-.tarea-item__estado {
-  flex: 0 0 auto;
 }
 
 .tarea-item__badge {
@@ -61,9 +59,9 @@
 }
 
 .tarea-item__acciones {
-  flex: 0 0 auto;
   display: flex;
   gap: 6px;
+  justify-content: flex-end;
 }
 
 .tarea-item__acciones button {
